@@ -26,6 +26,17 @@ Gateway: free source for anyone to inspect and run, and a pay-to-use node for
 customers who want operated measurement, provenance, and a
 settlement-recording boundary.
 
+## What's running right now
+
+Underneath the market listing is a live work-order loop: demand is minted
+directly from operator speech and from a capability registry, then dispatched
+every few minutes to whichever admitted inference provider — a hosted model or
+the operator's own hardware — can fulfill it most cheaply. Each dispatch is a
+receipted, typed exchange: input in, output or a named refusal out, never a
+silent mutation. This is the same machinery drafting glossary definitions,
+service designs, and new paid-product proposals elsewhere in this Union — an
+operating loop, not a demo.
+
 ## Sponsor the work
 
 Sponsorship funds public research, mathematical publications, documentation,
@@ -43,3 +54,6 @@ enterprises publish their own source and offers, customers choose them through
 explicit contracts, x402 settles paid HTTP crossings, and each enterprise
 keeps its own evidence. The apex makes the federation legible; it does not
 turn the federation into a single ambient platform.
+
+[Koios News](https://koios.news/) is a sibling public enterprise in the same
+federation, publishing independently under its own name and source.
