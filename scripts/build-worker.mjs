@@ -6,7 +6,7 @@ import {
   buildApp,
   markdownDirectoryReader,
   projectApp,
-} from "@emsenn/organizing-with-the-semantic-web/semantic-site-server";
+} from "@red-cup-engineering/organizing-with-the-semantic-web/semantic-site-server";
 import { SITE_CONFIG } from "../src/server.ts";
 
 const siteRoot = join(dirname(fileURLToPath(import.meta.url)), "..");

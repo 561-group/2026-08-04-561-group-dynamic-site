@@ -2,10 +2,10 @@ import process from "node:process";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { start, installGracefulShutdown, type StartResult } from "@emsenn/http-server";
-import { buildApp, markdownDirectoryReader, watchContent } from "@emsenn/organizing-with-the-semantic-web/semantic-site-server";
+import { start, installGracefulShutdown, type StartResult } from "@red-cup-engineering/http-server";
+import { buildApp, markdownDirectoryReader, watchContent } from "@red-cup-engineering/organizing-with-the-semantic-web/semantic-site-server";
 import type { FSWatcher } from "node:fs";
-import { fiveSixOneTheme } from "@emsenn/561-group-website-theme";
+import { fiveSixOneTheme } from "@red-cup-engineering/561-group-website-theme";
 
 const CONTENT_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "content");
 const DEFAULT_HOST = "127.0.0.1";

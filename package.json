@@ -21,9 +21,9 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@emsenn/561-group-website-theme": "workspace:*",
-    "@emsenn/http-server": "workspace:*",
-    "@emsenn/organizing-with-the-semantic-web": "workspace:*"
+    "@red-cup-engineering/561-group-website-theme": "0.0.1",
+    "@red-cup-engineering/http-server": "0.0.0",
+    "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -35,5 +35,14 @@
     "open-source",
     "x402",
     "sponsorship"
-  ]
+  ],
+  "x-semiotic-voxel": {
+    "profile": "org.harmonious-union.semiotic-voxel.v1",
+    "owner": "561-group",
+    "kind": "inert-material",
+    "actor": "urn:ame:site",
+    "operations": [],
+    "capabilities": [],
+    "package": "@561-group/site"
+  }
 }
