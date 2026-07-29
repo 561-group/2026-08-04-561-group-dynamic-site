@@ -54,6 +54,7 @@ async function verifyAccessJwt(token, { teamDomain, audience }) {
 }
 
 export async function admitMudOperator(request, environment = {}, options = {}) {
+  if (environment.MUD_PUBLIC_PROJECTION === "true") return true;
   const iapOperatorEmail = String(environment.IAP_OPERATOR_EMAIL ?? "").toLowerCase();
   if (iapOperatorEmail !== "") {
     const identity = String(request.headers.get("x-goog-authenticated-user-email") ?? "").toLowerCase();

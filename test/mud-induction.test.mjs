@@ -181,6 +181,13 @@ test("the GUI admits only the configured direct-IAP operator", async () => {
   assert.equal(await admitMudOperator(new Request("https://gui.561.group/"), { IAP_OPERATOR_EMAIL: "morgan.sennhauser@gmail.com" }), false);
 });
 
+test("the GUI admits the explicitly public projection without weakening the default boundary", async () => {
+  const request = new Request("https://gui.561.group/");
+  assert.equal(await admitMudOperator(request, { MUD_PUBLIC_PROJECTION: "true" }), true);
+  assert.equal(await admitMudOperator(request, { MUD_PUBLIC_PROJECTION: "false" }), false);
+  assert.equal(await admitMudOperator(request, {}), false);
+});
+
 test("the Worker-side reader accepts only the fixed live ledger from its VPC binding", async () => {
   const services = createCloudMudServices({ MUD_CHAIN_READER: { fetch: async (url, init) => {
     assert.equal(url, "http://semiotic-exchange-reader.internal/v1/semiotic-exchange/rpc");
