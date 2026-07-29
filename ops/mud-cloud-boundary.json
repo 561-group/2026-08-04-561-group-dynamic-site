@@ -1,0 +1,44 @@
+{
+  "type": "ModeledUnionDimensionCloudBoundary",
+  "version": 1,
+  "hostname": "gui.561.group",
+  "operatorAdmission": {
+    "protocol": "Cloudflare Access OIDC",
+    "identityProvider": "Google",
+    "identityRule": "one exact operator email address",
+    "devicePostureRule": "Require Gateway from the enrolled Bare Cedar Fog Cloudflare One Client",
+    "workerBindings": ["ACCESS_TEAM_DOMAIN", "ACCESS_POLICY_AUD", "ACCESS_OPERATOR_EMAIL"],
+    "workerVerification": "RS256 signature against the team JWKS, exact issuer, application audience, expiry, and operator email",
+    "edgeEnforcement": "one self-hosted Access application for gui.561.group; no bypass policy",
+    "applicationAudience": null
+  },
+  "history": {
+    "chain": "eip155:5615610",
+    "exchange": "0x98bBC65824962b61dF876A47B5779C4EcBBD4939",
+    "cloudMachine": "bare-cedar-fog-cloud-mirror",
+    "origin": "http://10.128.0.2:8562/v1/semiotic-exchange/rpc",
+    "workerVpcBinding": "MUD_CHAIN_READER",
+    "vpcServiceId": null,
+    "transport": "Cloudflare Workers VPC HTTP service over a remotely managed QUIC Cloudflare Tunnel",
+    "originAuthority": "only eth_blockNumber and exact-contract, exact-topic, deployment-bounded eth_getLogs; ADMIN, QBFT, writes, and foreign logs are refused before Besu",
+    "accountObservation": "Wrangler 4.114.0 listed Workers VPC services successfully for account 337e54ee6dc7d488933f473204a6d89e; none exist yet",
+    "productState": "open beta; free on all Workers plans during beta; ordinary Worker request and compute pricing remains applicable",
+    "gceFirewallObservation": "No public ingress rule admits TCP 8562; the only broad TCP rule is sourceRange 10.128.0.0/9 inside the default VPC, and only one VM presently exists in the project"
+  },
+  "refuses": [
+    "secret URL admission",
+    "client-JavaScript bearer credentials",
+    "browser-selected RPC methods, addresses, or intervals",
+    "GUI or Worker resident canonical state",
+    "an unbound or foreign chain witness"
+  ],
+  "externalActionsRequired": [
+    "the fixed-policy history reader is installed and active on bare-cedar-fog-cloud-mirror at 10.128.0.2:8562",
+    "create one remotely managed Workers VPC Cloudflare Tunnel and install its dashboard-issued token as a cloudflared system service on bare-cedar-fog-cloud-mirror using QUIC and cloudflared >=2025.7.0",
+    "run wrangler vpc service create semiotic-exchange-history --type http --tunnel-id <issued-tunnel-id> --ipv4 10.128.0.2 --http-port 8562",
+    "add the returned service ID to wrangler.jsonc as vpc_services binding MUD_CHAIN_READER with remote true",
+    "create a Cloudflare Access self-hosted application for gui.561.group with Google identity equal to the operator's exact email and Require Gateway device posture; create no bypass policy",
+    "set ACCESS_TEAM_DOMAIN, ACCESS_POLICY_AUD, and ACCESS_OPERATOR_EMAIL from that application, dry-run, then deploy"
+  ],
+  "externallySettled": false
+}

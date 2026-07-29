@@ -10,9 +10,15 @@
   },
   "scripts": {
     "build:worker": "node scripts/build-worker.mjs",
+    "build:cloud-run": "node scripts/build-cloud-run.mjs",
+    "project:mud-territory": "pnpm -r list --depth -1 --json | node scripts/project-workspace-territory.mjs",
+    "cloudflare:preflight": "node scripts/cloudflare-deployment.mjs preflight",
+    "cloudflare:deploy": "node scripts/cloudflare-deployment.mjs deploy",
+    "cloudflare:deploy:dry-run": "node scripts/cloudflare-deployment.mjs dry-run",
+    "cloudflare:reauthorize": "authenticate-linux-colony-with-cloudflare ops/cloudflare-authentication-request.json",
     "serve": "node src/server.ts",
-    "test": "node --test test/verify-ephemeris-offer.test.mjs",
-    "check": "tsc --noEmit && node --test test/verify-ephemeris-offer.test.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "tsc --noEmit && node --check scripts/cloudflare-deployment.mjs && node --test test/*.test.mjs",
     "verify:ephemeris-offer": "node scripts/verify-ephemeris-offer.mjs"
   },
   "exports": {
@@ -21,13 +27,22 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
+    "@red-cup-engineering/a2a-rmn-part-service": "workspace:*",
+    "@harmonious-union/inference-work-lot-service": "workspace:*",
+    "@lenticule-science/articulating": "workspace:*",
+    "@red-cup-engineering/ethereum-services-section": "workspace:*",
+    "@red-cup-engineering/modeled-union-dimension": "workspace:*",
+    "@red-cup-engineering/rmn-semantic-conformance": "workspace:*",
+    "@red-cup-engineering/typed-resource-catalog": "workspace:*",
     "@red-cup-engineering/561-group-website-theme": "0.0.1",
     "@red-cup-engineering/http-server": "0.0.0",
     "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.0"
   },
   "devDependencies": {
+    "@red-cup-engineering/linux-cloudflare-authentication-cell": "workspace:*",
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "wrangler": "4.114.0"
   },
   "sideEffects": false,
   "keywords": [
@@ -39,10 +54,16 @@
   "x-semiotic-voxel": {
     "profile": "org.harmonious-union.semiotic-voxel.v1",
     "owner": "561-group",
-    "kind": "inert-material",
+    "kind": "capability-cell",
     "actor": "urn:ame:site",
-    "operations": [],
-    "capabilities": [],
+    "operations": ["project-modeled-union-dimension", "preflight-cloudflare-deployment", "deploy-cloudflare-worker"],
+    "capabilities": [{
+      "capability": "modeled-union-dimension-browser-face",
+      "faces": ["gui.561.group", "restricted-arena", "gyrobifastigium-j26", "four-charge"]
+    }, {
+      "capability": "cloudflare-worker-projection",
+      "faces": ["named-profile", "linux-secret-service", "typed-authentication-refusal", "gui.561.group"]
+    }],
     "package": "@561-group/site"
   }
 }

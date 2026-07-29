@@ -1,0 +1,20 @@
+[Unit]
+Description=QUIC tunnel carrying the bounded SemioticExchange history face to Workers VPC
+After=network-online.target union-semiotic-exchange-history-reader.service
+Wants=network-online.target
+Requires=union-semiotic-exchange-history-reader.service
+ConditionPathExists=%h/.config/cloudflared/semiotic-exchange-history-workers-vpc.token
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/cloudflared tunnel --no-autoupdate --protocol quic run --token-file %h/.config/cloudflared/semiotic-exchange-history-workers-vpc.token
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+UMask=0077
+
+[Install]
+WantedBy=default.target

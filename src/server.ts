@@ -1,5 +1,5 @@
 import process from "node:process";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { start, installGracefulShutdown, type StartResult } from "@red-cup-engineering/http-server";
@@ -10,6 +10,15 @@ import { fiveSixOneTheme } from "@red-cup-engineering/561-group-website-theme";
 const CONTENT_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "content");
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 18_788;
+const PUBLIC_CONTENT_SOURCE = "https://github.com/561-group/561-group-site/blob/main/content";
+
+export function publicContentCitation(root: string, path: string): string {
+  return `${PUBLIC_CONTENT_SOURCE}/${relative(root, path).replaceAll("\\", "/")}`;
+}
+
+export function create561GroupReader() {
+  return markdownDirectoryReader({ citationFor: publicContentCitation });
+}
 
 export const SITE_CONFIG = {
   root: CONTENT_ROOT,
@@ -20,6 +29,7 @@ export const SITE_CONFIG = {
   publishedOnly: true,
   theme: fiveSixOneTheme,
   themeContext: { siteName: "The 561 Group", year: 2026 },
+  webmentionPath: null,
   pingbackUrl: null,
 } as const;
 
@@ -46,7 +56,7 @@ export async function serve561GroupSite(options: Serve561GroupSiteOptions = {}):
   const host = options.host ?? envOptions.host;
   const port = options.port ?? envOptions.port;
 
-  const reader = markdownDirectoryReader();
+  const reader = create561GroupReader();
   const app = buildApp(reader, SITE_CONFIG);
   const running = await start(app, { host, port });
   const watcher = watchContent(CONTENT_ROOT, reader, {});
