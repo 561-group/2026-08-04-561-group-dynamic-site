@@ -1,6 +1,6 @@
 {
   "type": "ModeledUnionDimensionCloudBoundary",
-  "version": 1,
+  "version": 2,
   "hostname": "gui.561.group",
   "operatorAdmission": {
     "protocol": "Cloudflare Access OIDC",
@@ -25,6 +25,18 @@
     "productState": "open beta; free on all Workers plans during beta; ordinary Worker request and compute pricing remains applicable",
     "gceFirewallObservation": "No public ingress rule admits TCP 8562; the only broad TCP rule is sourceRange 10.128.0.0/9 inside the default VPC, and only one VM presently exists in the project"
   },
+  "activeProjection": {
+    "provider": "Google Cloud Run",
+    "project": "five-six-one-group-dev",
+    "region": "us-central1",
+    "service": "wuxian-gui",
+    "revision": "wuxian-gui-00005-jtf",
+    "url": "https://wuxian-gui-1019481907460.us-central1.run.app",
+    "ingress": "Cloud Run IAM; unauthenticated invocation refused",
+    "network": "Direct VPC egress to the fixed 10.128.0.2:8562 history membrane",
+    "runtimeState": "serving a prewarmed witnessed projection; 5 chain events and 281 workspace package loci observed",
+    "operatorBrowserState": "unsettled: direct IAP IAM is provisioned, but this no-organization project has no OAuth client and Google requires first-time console creation"
+  },
   "refuses": [
     "secret URL admission",
     "client-JavaScript bearer credentials",
@@ -33,7 +45,8 @@
     "an unbound or foreign chain witness"
   ],
   "externalActionsRequired": [
-    "the fixed-policy history reader is installed and active on bare-cedar-fog-cloud-mirror at 10.128.0.2:8562",
+    "complete the one-time Google Cloud Run IAP OAuth-client initialization for this no-organization project, then enable IAP on wuxian-gui",
+    "bind gui.561.group DNS to the admitted projection",
     "create one remotely managed Workers VPC Cloudflare Tunnel and install its dashboard-issued token as a cloudflared system service on bare-cedar-fog-cloud-mirror using QUIC and cloudflared >=2025.7.0",
     "run wrangler vpc service create semiotic-exchange-history --type http --tunnel-id <issued-tunnel-id> --ipv4 10.128.0.2 --http-port 8562",
     "add the returned service ID to wrangler.jsonc as vpc_services binding MUD_CHAIN_READER with remote true",

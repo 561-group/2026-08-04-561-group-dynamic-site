@@ -56,7 +56,7 @@
     "owner": "561-group",
     "kind": "capability-cell",
     "actor": "urn:ame:site",
-    "operations": ["project-modeled-union-dimension", "preflight-cloudflare-deployment", "deploy-cloudflare-worker"],
+    "operations": ["project-modeled-union-dimension", "preflight-cloudflare-deployment", "deploy-cloudflare-worker", "build-cloud-run-projection"],
     "capabilities": [{
       "capability": "modeled-union-dimension-browser-face",
       "faces": ["gui.561.group", "restricted-arena", "gyrobifastigium-j26", "four-charge"]
