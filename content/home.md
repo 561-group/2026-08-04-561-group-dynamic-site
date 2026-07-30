@@ -40,7 +40,7 @@ operating loop, not a demo.
 ## Sponsor the work
 
 Sponsorship funds public research, mathematical publications, documentation,
-independent verification, and operating capacity. It is support for a public
+verification, and operating capacity. It is support for a public
 commons, not hidden access or control over a sovereign enterprise's findings.
 The market carries the published sponsorship terms and recipient policy. The
 current route accepts Base USDC (`eip155:8453`) at

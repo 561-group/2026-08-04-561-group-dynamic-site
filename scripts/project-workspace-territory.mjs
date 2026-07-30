@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createCarrierAdmissionReceipt } from "@red-cup-engineering/modeled-union-dimension";
-import { formatRml, parseRml, semanticId as rmnSemanticId } from "@red-cup-engineering/rmn-semantic-conformance";
 import { catalogNodeWorkspaceSources, semanticId } from "@red-cup-engineering/typed-resource-catalog";
+import { observeWorkspaceApiSurface } from "../src/jsnode-knowledge.mjs";
 
 const siteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const workspaceRoot = resolve(process.argv[2] ?? findWorkspaceRoot(siteRoot));
@@ -17,7 +17,9 @@ if (Buffer.byteLength(stdin, "utf8") > 4_194_304) throw new TypeError("pnpm work
 const admitted = JSON.parse(stdin);
 if (!Array.isArray(admitted) || admitted.length === 0) throw new TypeError("expected pnpm --recursive list --depth -1 --json admission on stdin");
 
-const packageAdmissions = admitted.filter(({ name }) => typeof name === "string" && name.length > 0);
+const listedAdmissions = admitted.filter(({ name }) => typeof name === "string" && name.length > 0);
+const networkAdmissions = await discoverNetworkPackageAdmissions(workspaceRoot);
+const packageAdmissions = networkAdmissions.length > listedAdmissions.length ? networkAdmissions : listedAdmissions;
 const resources = await Promise.all(packageAdmissions.map(async ({ path }, index) => {
   const directory = resolve(String(path ?? ""));
   const proofPath = relative(workspaceRoot, directory);
@@ -27,14 +29,14 @@ const resources = await Promise.all(packageAdmissions.map(async ({ path }, index
   return { path: proofPath ? `${proofPath.split(sep).join("/")}/package.json` : "package.json", content: await readFile(join(directory, "package.json"), "utf8") };
 }));
 const catalogReceipt = catalogNodeWorkspaceSources({ resources });
+const apiSurfaceReceipt = await observeWorkspaceApiSurface(workspaceRoot, packageAdmissions);
 const workspaceDefinition = await readFile(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
-const missionSource = await readFile(join(workspaceRoot, "SEMIOTIC_FOAM_ONE_MACHINE.rml"), "utf8");
-const missionTerm = parseRml(missionSource);
-if (formatRml(missionTerm).trim() !== missionSource.trim()) throw new Error("SEMIOTIC_FOAM_ONE_MACHINE.rml is not canonical RMN v2");
 const missionLaw = Object.freeze({
   type: "ModeledUnionMissionLawLocus",
   locus: "law:semiotic-foam-one-machine",
-  carrierNi: rmnSemanticId(missionTerm),
+  // The retired root mission document is not copied into this private Worker;
+  // its already-admitted semantic address remains the witnessed law coordinate.
+  carrierNi: "ni:///sha-256;RSyKg2hdU_EdC_L5HKXutC-PeP4Di6zsv909PElLFec",
   language: "rmn/v2",
 });
 const observationBody = {
@@ -42,6 +44,7 @@ const observationBody = {
   version: 1,
   workspaceDefinitionNi: semanticId({ content: workspaceDefinition }),
   catalogReceiptNi: catalogReceipt.id,
+  apiSurfaceReceiptNi: apiSurfaceReceipt.id,
   packageManifestNis: catalogReceipt.packages.map(({ manifestEvidence }) => manifestEvidence).sort(),
   denominator: catalogReceipt.denominator,
   missionLaw,
@@ -51,14 +54,14 @@ const carrierAdmissionReceipt = createCarrierAdmissionReceipt({
   carrier: { type: catalogReceipt.type, value: catalogReceipt },
   protocolVerificationReceiptNis: [observationReceipt.id],
 });
-const artifactBody = { type: "ModeledUnionWorkspaceTerritoryArtifact", version: 1, observationReceipt, carrierAdmissionReceipt };
+const artifactBody = { type: "ModeledUnionWorkspaceTerritoryArtifact", version: 1, observationReceipt, carrierAdmissionReceipt, apiSurfaceReceipt };
 const artifact = { ...artifactBody, id: semanticId(artifactBody) };
 const outputDirectory = join(siteRoot, ".tmp", "mud-territory");
 const artifactName = `${artifact.id.slice("ni:///sha-256;".length)}.json`;
 await mkdir(outputDirectory, { recursive: true });
 await writeFile(join(outputDirectory, artifactName), `${JSON.stringify(artifact)}\n`, { flag: "w" });
 await writeFile(join(outputDirectory, "index.json"), `${JSON.stringify({ type: "ModeledUnionWorkspaceTerritoryArtifactIndex", version: 1, artifact: artifact.id, file: artifactName })}\n`, { flag: "w" });
-process.stdout.write(`${JSON.stringify({ type: "ModeledUnionWorkspaceTerritoryProjection", artifact: artifact.id, carrier: carrierAdmissionReceipt.contentNi, packages: catalogReceipt.packages.length, relations: catalogReceipt.relations.length, output: relative(workspaceRoot, join(outputDirectory, artifactName)).split(sep).join("/") })}\n`);
+process.stdout.write(`${JSON.stringify({ type: "ModeledUnionWorkspaceTerritoryProjection", artifact: artifact.id, carrier: carrierAdmissionReceipt.contentNi, packages: catalogReceipt.packages.length, symbols: apiSurfaceReceipt.symbols.length, relations: catalogReceipt.relations.length, output: relative(workspaceRoot, join(outputDirectory, artifactName)).split(sep).join("/") })}\n`);
 
 function findWorkspaceRoot(start) {
   let at = resolve(start);
@@ -68,4 +71,35 @@ function findWorkspaceRoot(start) {
     if (parent === at) throw new Error("pnpm-workspace.yaml was not found above the site");
     at = parent;
   }
+}
+
+async function discoverNetworkPackageAdmissions(root) {
+  const base = join(root, "lib", "emsenn", "services", "561-group");
+  const packages = [];
+  async function walk(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      const proofPath = `/${relative(base, path).split(sep).join("/")}${entry.isDirectory() ? "/" : ""}`;
+      if (entry.isDirectory()) {
+        if ([".git", ".tmp", ".venv", "dist", "node_modules"].includes(entry.name)
+            || proofPath.includes("/.claude/worktrees/") || proofPath.includes("/content/assets/legacy/")
+            || proofPath.includes("/content/retired-carriers/") || proofPath.includes("/data/runtime-images/")
+            || proofPath.includes("/lib/legacy/") || proofPath.includes("/lib/material/")) continue;
+        await walk(path);
+      } else if (entry.name === "package.json") {
+        let manifest;
+        try { manifest = JSON.parse(await readFile(path, "utf8")); } catch { continue; }
+        if (typeof manifest.name === "string" && manifest.name !== "" && typeof manifest.version === "string" && manifest.version !== "") {
+          packages.push({ name: manifest.name, version: manifest.version, path: directory });
+        }
+      }
+    }
+  }
+  await walk(base);
+  const byName = new Map();
+  for (const admission of packages.sort((left, right) => left.name.localeCompare(right.name) || left.path.localeCompare(right.path))) {
+    if (byName.has(admission.name)) throw new TypeError(`network package identity ${admission.name} has more than one live source`);
+    byName.set(admission.name, admission);
+  }
+  return [...byName.values()];
 }
