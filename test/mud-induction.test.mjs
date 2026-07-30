@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { createCarrierAdmissionReceipt } from "@red-cup-engineering/modeled-union-dimension";
-import { admitMudOperator, createCloudMudServices, handleMudApi, MUD_CLIENT, MUD_LEDGER } from "../src/mud-face.mjs";
+import { admitMudOperator, createCloudMudServices, handleMudApi, MUD_CLIENT, MUD_HTML, MUD_LEDGER, projectMudWebGui } from "../src/mud-face.mjs";
 
 const controller = "0x08E4B3bc9ef76b403879C0eC372d1Fd146E3a07B";
 const id = (byte) => `0x${byte.repeat(64)}`;
@@ -72,7 +72,7 @@ test("the browser projection groups witnessed demand moves into causal threads a
 
 test("the projected private browser client is executable JavaScript", () => {
   assert.doesNotThrow(() => new Function(MUD_CLIENT));
-  assert.match(MUD_CLIENT, /frozen /u);
+  assert.equal(MUD_CLIENT, "");\n  assert.match(MUD_HTML, /data-web-gui/u);\n  assert.match(MUD_HTML, /goo-world/u);
 });
 
 test("the private MUD traverses every currently admitted workspace package through exact proof paths", async () => {
@@ -229,3 +229,4 @@ test("the Worker-side reader accepts only the fixed live ledger from its VPC bin
   await assert.rejects(malformed.readSemioticExchangeHistory(), /malformed witness/u);
   await assert.rejects(createCloudMudServices().readSemioticExchangeHistory(), /not bound/u);
 });
+\n\ntest("shared GUI view leaves raw API intact",async()=>{const s={readSemioticExchangeHistory:async()=>history,readWorkspaceTerritory:async()=>territoryArtifact},raw=await(await handleMudApi(new Request("https://gui.561.group/api/mud"),"read",s)).json(),view=await(await handleMudApi(new Request("https://gui.561.group/api/mud?view=web-gui"),"read",s)).json();assert.equal(raw.type,"ModeledUnionDimensionBrowserProjection");assert.equal(view.kind,"web-gui.world-projection");assert.equal(view.entities.length,raw.territory.packages.length)});\n\ntest("frozen joints remain material contradictions",()=>{const v=projectMudWebGui({territory:{id:"urn:test",packages:[],dependencies:[]},restrictedArena:{actions:[]},causalFlow:{threads:[],frozenJoints:[{operation:"purchaseMove",unavailability:"authority absent"}]}});assert.equal(v.contradictions.length,1);assert.equal(v.journal[0].tone,"contradiction")});\n
