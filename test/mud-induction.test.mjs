@@ -15,6 +15,11 @@ const history = Object.freeze([
   { kind: "DemandRaised", chainPosition: chainPosition(1), demand, raiser: controller, wantedLaw: law, grounding: id("5"), carrierNi: ni("demand") },
   { kind: "DemandOffered", chainPosition: chainPosition(2), demand, offer, cell, controller, carrierNi: ni("offer") },
 ]);
+const settledHistory = Object.freeze([
+  ...history,
+  { kind: "PurchaseMoved", chainPosition: chainPosition(3), demand, offer, cell, raiser: controller, controller },
+  { kind: "DemandSettled", chainPosition: chainPosition(4), demand, cell, controller, result: id("6"), carrierNi: ni("result") },
+]);
 const territoryCarrier = createCarrierAdmissionReceipt({
   carrier: { type: "NodeWorkspaceSourceCatalogReceipt", value: { id: ni("test-workspace-catalog"), type: "NodeWorkspaceSourceCatalogReceipt", version: 1, denominator: { type: "admitted-package-manifest-set", count: 0 }, packages: [], relations: [] } },
   protocolVerificationReceiptNis: [ni("test-workspace-observation")],
@@ -45,8 +50,29 @@ test("the browser face projects its loci and arena from live SemioticExchange hi
   assert.ok(state.cells.every(({ id: locus }) => !["bamboo-court", "jade-gate", "cloud-bridge"].includes(locus)));
 });
 
+test("the browser projection groups witnessed demand moves into causal threads and preserves frozen arena joints", async () => {
+  const response = await handleMudApi(new Request(`https://gui.561.group/api/mud?actor=${controller}`), "read", {
+    readSemioticExchangeHistory: async () => settledHistory,
+    readWorkspaceTerritory: async () => territoryArtifact,
+  });
+  assert.equal(response.status, 200);
+  const state = await response.json();
+  const [thread] = state.causalFlow.threads;
+  assert.equal(state.causalFlow.type, "SemioticExchangeCausalFlow");
+  assert.equal(thread.demand, demand);
+  assert.equal(thread.phase, "settled");
+  assert.deepEqual(thread.events.map(({ kind }) => kind), ["DemandRaised", "DemandOffered", "PurchaseMoved", "DemandSettled"]);
+  assert.equal(thread.raiser, controller);
+  assert.equal(thread.controller, controller);
+  assert.equal(thread.cell, cell);
+  assert.ok(thread.causalRelations.length >= 3);
+  assert.ok(thread.restrictedJoints.every(({ available }) => available === false));
+  assert.ok(state.causalFlow.frozenJoints.every(({ available }) => available === false));
+});
+
 test("the projected private browser client is executable JavaScript", () => {
   assert.doesNotThrow(() => new Function(MUD_CLIENT));
+  assert.match(MUD_CLIENT, /frozen /u);
 });
 
 test("the private MUD traverses every currently admitted workspace package through exact proof paths", async () => {
