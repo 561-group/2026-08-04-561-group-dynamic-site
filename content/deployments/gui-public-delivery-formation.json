@@ -1,59 +1,14 @@
 {
-  "type": "GuiPublicDeliveryFormation",
-  "version": 1,
-  "formedAt": "2026-07-29T20:00:00Z",
-  "customerRequest": {
-    "id": "gui.561.group-public-delivery",
-    "requestedEffect": "Publish the GUI through customer-owned public delivery without disclosing credentials.",
-    "credentialHandling": "No raw credential, bearer token, API key, or secret is carried by this formation."
-  },
-  "providerExactEffectOffers": [
-    {
-      "provider": "Google Cloud Run",
-      "kind": "desired-state-binding",
-      "service": "projects/five-six-one-group-dev/locations/us-central1/services/wuxian-gui",
-      "observedAt": "2026-07-29T20:00:00Z",
-      "generation": 9,
-      "latestReadyRevision": "wuxian-gui-00006-trb",
-      "traffic": [{ "revision": "wuxian-gui-00006-trb", "percent": 100 }],
-      "image": "us-central1-docker.pkg.dev/five-six-one-group-dev/cloud-run-source-deploy/wuxian-gui@sha256:34c7581c8b8cb31032b317a6378bebb7752067e3edcbc49e490f0032a69ec895",
-      "ingress": "all",
-      "readyConditions": ["Ready", "ConfigurationsReady", "RoutesReady"],
-      "effect": "Serve the desired container revision at the Cloud Run service URL."
-    },
-    {
-      "provider": "Cloudflare Workers",
-      "kind": "route-declaration-binding",
-      "source": "wrangler.jsonc",
-      "routes": [
-        { "pattern": "561.group/*", "zoneName": "561.group" },
-        { "pattern": "market.561.group", "customDomain": true },
-        { "pattern": "gui.561.group", "customDomain": true }
-      ],
-      "effect": "Declare the public edge routes to be applied by the existing Cloudflare deployment seam."
-    }
-  ],
-  "admission": {
-    "status": "unsettled",
-    "refusal": "No authoritative desired-state record supports a restricted or identity-based current admission claim; Cloud Run desired ingress is all.",
-    "notClaimed": ["Cloudflare Access enforcement", "Cloud Run IAM-only invocation", "operator-only browser admission"]
-  },
-  "acceptanceAndCustodyReferences": {
-    "customerAcceptance": { "status": "not-issued", "slot": "customer acceptance receipt" },
-    "credentialCustody": { "status": "not-applicable", "reason": "The formation carries no credentials." },
-    "providerAuthorization": { "status": "not-issued", "slot": "provider authorization/custody receipt" }
-  },
-  "effectReceiptSlots": [
-    { "provider": "Google Cloud Run", "status": "not-issued", "slot": "revision effect receipt" },
-    { "provider": "Cloudflare Workers", "status": "not-issued", "slot": "route publication receipt" },
-    { "provider": "DNS/TLS/HTTP observer", "status": "not-issued", "slot": "independent external observation receipt" }
-  ],
-  "independentAssayVector": {
-    "script": "scripts/assay-gui-public-delivery.mjs",
-    "independence": "Uses only external DNS, TLS, and HTTPS observations; it neither invokes provider CLIs nor imports deployment harnesses.",
-    "target": { "hostname": "gui.561.group", "path": "/" },
-    "residueKinds": ["pass", "fail", "not-claimed", "not-applicable"],
-    "checks": ["dns", "tls", "http", "path", "access-policy"],
-    "prohibitedClaim": "The assay never asserts deployed:true."
-  }
+  "type": "PublicDeliverySolicitation",
+  "formationType": "PublicDeliveryFormation",
+  "customer": "urn:561-group:site",
+  "formationDigest": "ni:///sha-256;SeZlSE_zmHHj28mWg4fymKj3Bk4fGpX177E_UZ5x0eg",
+  "artifactDigest": "ni:///sha-256;NMdYHIuMsxAysxemN4vrt3UgZ-Pty8SeSQ8AMqaeyJU",
+  "targetDigest": "ni:///sha-256;3Rr7S87740iAsGzN2pp1ofdr_QEXVj97Z5M9e9Xzduc",
+  "executionMode": "live",
+  "exactEffects": [
+    "publish the exact requested artifact at https://gui.561.group/",
+    "route gui.561.group requests to the exact requested artifact",
+    "serve public unauthenticated HTTPS GET and HEAD requests for path /"
+  ]
 }
