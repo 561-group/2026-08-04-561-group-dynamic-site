@@ -82,6 +82,23 @@ export function refuseUnadmittedMudOperator() {
 
 export function createCloudMudServices(environment = {}, workspaceTerritoryArtifact = null) {
   const sealedWorkspaceTerritory = deepFreeze(workspaceTerritoryArtifact);
+  const carrierAdmission = environment.MUD_CARRIER_ADMISSION;
+  const zeroCustodyActuator = environment.MUD_ZERO_CUSTODY_TRANSITION;
+  async function invoke(boundary, path, body, label) {
+    if (typeof boundary?.fetch !== "function") throw unavailable(`${label} is not bound`);
+    let response;
+    try {
+      response = await boundary.fetch(path, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw unavailable(`${label} did not answer`);
+    }
+    if (!response?.ok) throw unavailable(`${label} refused with HTTP ${response?.status ?? "unknown"}`);
+    try { return await response.json(); } catch { throw unavailable(`${label} returned a malformed receipt`); }
+  }
   return Object.freeze({
     async readWorkspaceTerritory() {
       if (sealedWorkspaceTerritory?.type !== "ModeledUnionWorkspaceTerritoryArtifact" || sealedWorkspaceTerritory.version !== 1) throw unavailable("the content-addressed workspace territory is not bound");
@@ -111,6 +128,14 @@ export function createCloudMudServices(environment = {}, workspaceTerritoryArtif
         rpc,
       });
     },
+    async admitActivityPubCloudEventA2aRmn(activity) {
+      return invoke(carrierAdmission, "http://mud-carrier-admission.internal/v1/admit-activitypub-cloudevent-a2a-rmn", activity, "the authenticated ActivityPub(CloudEvent(A2A(RMN))) carrier-admission service");
+    },
+    zeroCustodyTransition: Object.freeze({
+      async transition(input) {
+        return invoke(zeroCustodyActuator, "http://zero-custody-transition.internal/v1/semiotic-exchange/transition", input, "the authenticated zero-custody SemioticExchange transition actuator");
+      },
+    }),
     observeBoundaryTime() { return new Date().toISOString(); },
   });
 }
@@ -354,13 +379,13 @@ function admittedCarrierReceipts(value) {
  * zero-custody transition interface.
  */
 async function playRestrictedMove(request, services) {
+  if (typeof services.admitActivityPubCloudEventA2aRmn !== "function" || typeof services.zeroCustodyTransition?.transition !== "function") {
+    return json({ type: "SemioticExchangeActuatorUnavailable", error: "typed ActivityPub(CloudEvent(A2A(RMN))) admission and zero-custody transition configuration are required" }, 503);
+  }
   let input;
   try { input = await request.json(); } catch { return json({ type: "ModeledUnionPlayRefusal", error: "one exact play request is required" }, 400); }
   if (!exactKeys(input, ["actionId", "activity", "actor", "authority", "resourceReceipts", "transition"]) || typeof input.actionId !== "string" || input.actionId === "" || typeof input.actor !== "string" || input.actor === "" || !Array.isArray(input.resourceReceipts) || input.resourceReceipts.length === 0) {
     return json({ type: "ModeledUnionPlayRefusal", error: "one actor, restricted action, activity carrier, authority receipt set, measured resource receipts, and transition are required" }, 400);
-  }
-  if (typeof services.admitActivityPubCloudEventA2aRmn !== "function" || typeof services.zeroCustodyTransition?.transition !== "function") {
-    return json({ type: "SemioticExchangeActuatorUnavailable", error: "typed ActivityPub(CloudEvent(A2A(RMN))) admission and zero-custody transition configuration are required" }, 503);
   }
   if (typeof services.readSemioticExchangeHistory !== "function" || typeof services.readWorkspaceTerritory !== "function") {
     return json({ type: "ModeledUnionPlayRefusal", error: "the live witnessed dimension is unavailable" }, 503);

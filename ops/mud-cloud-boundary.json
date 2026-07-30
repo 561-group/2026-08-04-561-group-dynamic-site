@@ -18,6 +18,8 @@
     "cloudMachine": "bare-cedar-fog-cloud-mirror",
     "origin": "http://10.128.0.2:8563",
     "workerVpcBinding": "MUD_CHAIN_READER",
+    "carrierAdmissionBinding": "MUD_CARRIER_ADMISSION",
+    "zeroCustodyTransitionBinding": "MUD_ZERO_CUSTODY_TRANSITION",
     "vpcServiceId": null,
     "transport": "Cloudflare Workers VPC HTTP service over a remotely managed QUIC Cloudflare Tunnel",
     "originAuthority": "only eth_blockNumber and exact-successor-contract, exact-topic, deployment-bounded eth_getLogs; ADMIN, QBFT, writes, and foreign logs are refused in the read-only projection",
@@ -49,6 +51,7 @@
     "bind gui.561.group DNS to the admitted projection",
     "create one remotely managed Workers VPC Cloudflare Tunnel and install its dashboard-issued token as a cloudflared system service on bare-cedar-fog-cloud-mirror using QUIC and cloudflared >=2025.7.0",
     "bind MUD_CHAIN_READER to the fixed private successor RPC at 10.128.0.2:8563",
+    "bind MUD_CARRIER_ADMISSION to the authenticated ActivityPub(CloudEvent(A2A(RMN))) carrier-admission service and MUD_ZERO_CUSTODY_TRANSITION to SXC-M7; neither service may expose browser credentials or accept browser-selected endpoint configuration",
     "add the returned service ID to wrangler.jsonc as vpc_services binding MUD_CHAIN_READER with remote true",
     "create a Cloudflare Access self-hosted application for gui.561.group with Google identity equal to the operator's exact email and Require Gateway device posture; create no bypass policy",
     "set ACCESS_TEAM_DOMAIN, ACCESS_POLICY_AUD, and ACCESS_OPERATOR_EMAIL from that application, dry-run, then deploy"

@@ -256,7 +256,29 @@ test("the Worker-side reader accepts only the fixed live ledger from its VPC bin
   await assert.rejects(createCloudMudServices().readSemioticExchangeHistory(), /not bound/u);
 });
 
+test("the Worker composes play only through fixed private carrier-admission and zero-custody bindings", async () => {
+  const calls = [];
+  const services = createCloudMudServices({
+    MUD_CARRIER_ADMISSION: { fetch: async (url, init) => {
+      calls.push({ boundary: "admission", url, init });
+      return Response.json({ carrierAdmissions: [], rmnSemanticDigest: id("4") });
+    } },
+    MUD_ZERO_CUSTODY_TRANSITION: { fetch: async (url, init) => {
+      calls.push({ boundary: "transition", url, init });
+      return Response.json({ type: "Create", object: { type: "CloudEvent" } });
+    } },
+  }, territoryArtifact);
+  await services.admitActivityPubCloudEventA2aRmn({ type: "Create" });
+  await services.zeroCustodyTransition.transition({ resourceReceipts: [{ type: "MeasuredResourceReceipt" }] });
+  assert.deepEqual(calls.map(({ boundary, url, init }) => ({ boundary, url, method: init.method, body: JSON.parse(init.body) })), [
+    { boundary: "admission", url: "http://mud-carrier-admission.internal/v1/admit-activitypub-cloudevent-a2a-rmn", method: "POST", body: { type: "Create" } },
+    { boundary: "transition", url: "http://zero-custody-transition.internal/v1/semiotic-exchange/transition", method: "POST", body: { resourceReceipts: [{ type: "MeasuredResourceReceipt" }] } },
+  ]);
+  await assert.rejects(createCloudMudServices({}, territoryArtifact).admitActivityPubCloudEventA2aRmn({}), /not bound/u);
+  await assert.rejects(createCloudMudServices({}, territoryArtifact).zeroCustodyTransition.transition({}), /not bound/u);
+});
+
 test("the browser face has no invented swarm-work gateway or work lifecycle custody", () => {
   const services = createCloudMudServices({}, territoryArtifact);
-  assert.deepEqual(Object.keys(services).sort(), ["observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory"]);
+  assert.deepEqual(Object.keys(services).sort(), ["admitActivityPubCloudEventA2aRmn", "observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory", "zeroCustodyTransition"]);
 });
