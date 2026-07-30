@@ -104,9 +104,9 @@ export function createCloudMudServices(environment = {}, workspaceTerritoryArtif
       return readSemioticExchangeEvents({
         rpcUrl: "vpc://semiotic-exchange-reader",
         exchange: MUD_LEDGER.exchange,
-        // The successor SemioticExchange was deployed on the new chain; its
-        // bounded history begins at genesis rather than the retired chain's cut.
-        fromBlock: 0n,
+        // The successor SemioticExchange deployed at block 70; this avoids
+        // scanning the retired chain's cut or pre-deployment successor blocks.
+        fromBlock: 70n,
         toBlock: latest,
         rpc,
       });
