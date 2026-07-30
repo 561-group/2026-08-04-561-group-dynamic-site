@@ -1,5 +1,5 @@
 import { renderWebGuiDocument } from "@red-cup-engineering/web-gui-services-section";
-import { createModeledUnionDimension } from "@red-cup-engineering/modeled-union-dimension";
+import { createCarrierAdmissionReceipt, createModeledUnionDimension } from "@red-cup-engineering/modeled-union-dimension";
 import { readSemioticExchangeEvents } from "../../../services/red-cup-engineering/services/software-services-section/services/blockchain-services-section/services/ethereum-services-section/src/semiotic-exchange-events.mjs";
 import { gyrobifastigiumJ26 } from "@lenticule-science/articulating/predicating/geometry/spatial";
 import { semanticBytes, semanticId } from "@red-cup-engineering/rmn-semantic-conformance";
@@ -322,13 +322,95 @@ export function projectMudWebGui(projection) {
   return {kind:"web-gui.world-projection",revision:projection.territory?.id??projection.missionLaw?.carrierNi??"unwitnessed",title:"The Ceramic Jianghu",subtitle:"A playable local restriction of the witnessed Modeled Union — porous where unknown, cracked where both accounts remain.",actor:{id:projection.actor??"urn:ame:modeled-union-dimension",name:"Waste-Stream Wanderer",condition:frozen.length?frozen.length+" held knots":"confluent"},locus:{id:preferred.id??"nowhere",name:preferred.name??"Unresolved locus",description:preferred.phase??"No admitted package locus."},entities,paths,actions:(projection.restrictedArena?.actions??[]).slice(0,9).map((e,i)=>({id:e.operation+"-"+i,label:e.operation,detail:e.unavailability??"Admitted restricted move",command:e.operation,enabled:e.available===true,shortcut:String(i+1)})),journal,faculties:[{id:"perception",name:"Perception",level:Math.min(100,Math.round(packages.length/4)),voice:packages.length+" admitted package loci are visible.",active:true},{id:"causality",name:"Causal Memory",level:Math.min(100,threads.length*14),voice:threads.length+" ordered demand threads."},{id:"composure",name:"Composure",level:Math.max(0,100-frozen.length*8),voice:frozen.length?"Do not sand the contradiction out of the ceramic.":"The local joints settle."}],contradictions:frozen.map((e,i)=>({id:e.id??"frozen-"+i,summary:e.unavailability??"A restricted joint is frozen.",witnesses:[e.operation].filter(Boolean),retained:true})),witness:{status:"live",receipt:projection.territory?.id??projection.missionLaw?.carrierNi??""}};
 }
 
+function exactKeys(value, keys) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    && Object.keys(value).sort().join("\0") === [...keys].sort().join("\0");
+}
+
+function exactTransition(action, transition) {
+  if (!exactKeys(transition, ["args", "operation"]) || transition.operation !== action.operation || !Array.isArray(transition.args)) {
+    throw Object.assign(new Error("one exact restricted SemioticExchange transition is required"), { status: 400 });
+  }
+  const [first, second] = transition.args;
+  const same = (left, right) => typeof left === "string" && left.toLowerCase() === String(right).toLowerCase();
+  const matches = {
+    raiseDemand: () => transition.args.length === 3 && action.raiseDemand !== undefined,
+    retireCell: () => transition.args.length === 1 && same(first, action.cell),
+    offerDemand: () => transition.args.length === 3 && same(first, action.demand) && same(second, action.cell),
+    purchaseMove: () => transition.args.length === 2 && same(first, action.demand) && same(second, action.offer),
+    settleDemand: () => transition.args.length === 2 && same(first, action.demand),
+  };
+  if (matches[action.operation]?.() !== true) throw Object.assign(new Error("transition arguments do not name the requested restricted move"), { status: 409 });
+  return transition;
+}
+
+function admittedCarrierReceipts(value) {
+  if (!Array.isArray(value) || value.length === 0) throw Object.assign(new Error("ActivityPub(CloudEvent(A2A(RMN))) admission produced no carrier receipts"), { status: 400 });
+  return value.map((receipt) => {
+    const canonicalReceipt = createCarrierAdmissionReceipt({ carrier: receipt?.carrier, protocolVerificationReceiptNis: receipt?.protocolVerificationReceiptNis });
+    if (receipt?.type !== "CarrierAdmissionReceipt" || receipt?.id !== canonicalReceipt.id || receipt?.contentNi !== canonicalReceipt.contentNi) {
+      throw Object.assign(new Error("ActivityPub(CloudEvent(A2A(RMN))) admission receipt is not canonical"), { status: 400 });
+    }
+    return canonicalReceipt;
+  });
+}
+
+/**
+ * The browser never validates federation credentials, holds KMS authority, or
+ * selects a chain move.  It asks injected boundary cells to admit one exact
+ * AP(CloudEvent(A2A(RMN))) carrier, then lets the existing restricted arena
+ * accept exactly the requested move before forwarding it once to the existing
+ * zero-custody transition interface.
+ */
+async function playRestrictedMove(request, services) {
+  let input;
+  try { input = await request.json(); } catch { return json({ type: "ModeledUnionPlayRefusal", error: "one exact play request is required" }, 400); }
+  if (!exactKeys(input, ["actionId", "activity", "actor", "authority", "resourceReceipts", "transition"]) || typeof input.actionId !== "string" || input.actionId === "" || typeof input.actor !== "string" || input.actor === "" || !Array.isArray(input.resourceReceipts) || input.resourceReceipts.length === 0) {
+    return json({ type: "ModeledUnionPlayRefusal", error: "one actor, restricted action, activity carrier, authority receipt set, measured resource receipts, and transition are required" }, 400);
+  }
+  if (typeof services.admitActivityPubCloudEventA2aRmn !== "function" || typeof services.zeroCustodyTransition?.transition !== "function") {
+    return json({ type: "SemioticExchangeActuatorUnavailable", error: "typed ActivityPub(CloudEvent(A2A(RMN))) admission and zero-custody transition configuration are required" }, 503);
+  }
+  if (typeof services.readSemioticExchangeHistory !== "function" || typeof services.readWorkspaceTerritory !== "function") {
+    return json({ type: "ModeledUnionPlayRefusal", error: "the live witnessed dimension is unavailable" }, 503);
+  }
+  const admitted = await services.admitActivityPubCloudEventA2aRmn(input.activity);
+  if (!exactKeys(admitted, ["carrierAdmissions", "rmnSemanticDigest"]) || !/^0x[0-9a-fA-F]{64}$/u.test(admitted.rmnSemanticDigest ?? "")) {
+    return json({ type: "ModeledUnionPlayRefusal", error: "ActivityPub(CloudEvent(A2A(RMN))) admission did not return one canonical RMN digest and carrier receipts" }, 400);
+  }
+  const carrierAdmissions = admittedCarrierReceipts(admitted.carrierAdmissions);
+  const history = await services.readSemioticExchangeHistory();
+  const territory = deepFreeze(await services.readWorkspaceTerritory());
+  const dimension = createModeledUnionDimension({
+    events: history,
+    carrierAdmissions: [territory.carrierAdmissionReceipt, ...carrierAdmissions],
+    authorityReceipts: input.authority,
+    actuator: async (action) => services.zeroCustodyTransition.transition({
+      authority: input.authority,
+      resourceReceipts: input.resourceReceipts,
+      rmnSemanticDigest: admitted.rmnSemanticDigest,
+      transition: exactTransition(action, input.transition),
+    }),
+    observerFamily: workspaceObserverFamily(territory),
+    missionLaw: territory.observationReceipt?.missionLaw ?? null,
+    ...MUD_LEDGER,
+  });
+  try {
+    const receipt = await dimension.actuate(input.actionId, input.actor);
+    return json({ type: "ModeledUnionRestrictedMoveReceipt", actionId: input.actionId, actor: input.actor, rmnSemanticDigest: admitted.rmnSemanticDigest, resourceReceipts: input.resourceReceipts, receipt }, 202);
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 409;
+    return json({ type: "ModeledUnionPlayRefusal", error: error instanceof Error ? error.message : String(error) }, status);
+  }
+}
+
 export async function handleMudApi(request, endpoint, services = {}) {
   try {
     const method = endpoint === "read" ? "GET" : endpoint === "play" || endpoint === "conversation" ? "POST" : null;
     if (method === null) return json({ error: "unknown MUD endpoint" }, 404);
     if (request.method === "OPTIONS") return preflight(method);
     if (request.method !== method) return methodNotAllowed(method);
-    if (endpoint === "play") return json({ type: "SemioticExchangeActuatorUnavailable", error: "the zero-custody SemioticExchange append actuator is unavailable" }, 503);
+    if (endpoint === "play") return playRestrictedMove(request, services);
     if (endpoint === "conversation") return admitConversation(request, services);
     if (typeof services.readSemioticExchangeHistory !== "function") return json({ type: "SemioticExchangeReadUnavailable", error: "a live SemioticExchange history source is not bound" }, 503);
     const url = new URL(request.url);

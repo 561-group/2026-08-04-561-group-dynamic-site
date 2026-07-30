@@ -10,10 +10,12 @@ const id = (byte) => `0x${byte.repeat(64)}`;
 const ni = (label) => `ni:///sha-256;${createHash("sha256").update(label).digest("base64url")}`;
 const chainPosition = (logIndex) => ({ blockNumber: 5619n, blockHash: id("a"), transactionHash: id("b"), logIndex });
 const cell = id("1"), law = id("2"), demand = id("3"), offer = id("4");
+const carrierAdmission = (label) => createCarrierAdmissionReceipt({ carrier: { type: "TestSemioticCarrier", value: { label } }, protocolVerificationReceiptNis: [ni(`protocol:${label}`)] });
+const cellCarrier = carrierAdmission("cell"), demandCarrier = carrierAdmission("demand"), offerCarrier = carrierAdmission("offer");
 const history = Object.freeze([
-  { kind: "CellSeated", chainPosition: chainPosition(0), cell, controller, law, carrierNi: ni("cell") },
-  { kind: "DemandRaised", chainPosition: chainPosition(1), demand, raiser: controller, wantedLaw: law, grounding: id("5"), carrierNi: ni("demand") },
-  { kind: "DemandOffered", chainPosition: chainPosition(2), demand, offer, cell, controller, carrierNi: ni("offer") },
+  { kind: "CellSeated", chainPosition: chainPosition(0), cell, controller, law, carrierNi: cellCarrier.contentNi },
+  { kind: "DemandRaised", chainPosition: chainPosition(1), demand, raiser: controller, wantedLaw: law, grounding: id("5"), carrierNi: demandCarrier.contentNi },
+  { kind: "DemandOffered", chainPosition: chainPosition(2), demand, offer, cell, controller, carrierNi: offerCarrier.contentNi },
 ]);
 const settledHistory = Object.freeze([
   ...history,
@@ -139,10 +141,34 @@ test("the private face refuses a chain-only world without a sealed workspace ter
   assert.equal((await response.json()).type, "WorkspaceTerritoryReadUnavailable");
 });
 
-test("writes report the missing zero-custody actuator instead of mutating browser state", async () => {
-  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/play", { method: "POST" }), "play", {});
+test("writes fail closed when the injected carrier-admission and zero-custody transition boundary is absent", async () => {
+  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/play", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ actor: controller, actionId: ni("action"), activity: { type: "Create", object: { type: "CloudEvent" } }, authority: {}, resourceReceipts: [{ type: "MeasuredResourceReceipt" }], transition: { operation: "purchaseMove", args: [demand, offer] } }) }), "play", {});
   assert.equal(response.status, 503);
   assert.equal((await response.json()).type, "SemioticExchangeActuatorUnavailable");
+});
+
+test("a play request admits one exact carrier and forwards exactly one restricted move to the injected zero-custody actuator", async () => {
+  const rmnSemanticDigest = id("9");
+  const authority = {
+    ucan: [{ type: "UcanInvocationVerificationReceipt", version: 1, disposition: "authorized", revocationStatus: "active", id: ni("ucan"), controller, actor: controller, invocationCid: "bafy-invocation", delegationCid: "bafy-delegation", capabilityNi: ni("capability"), capability: { can: "semiotic-exchange/purchase-move", with: "did:pkh:eip155:5615611:0x1111111111111111111111111111111111111111", nb: {} } }],
+    controllerBindings: [{ type: "EnterpriseAccountControllerBindingReceipt", version: 1, disposition: "bound", protocol: "ERC-1271", admissionPolicy: "reverify-erc1271-and-userop-nonce-at-every-admission", id: ni("binding"), controller, actor: controller, invocationCid: "bafy-invocation", delegationCid: "bafy-delegation", capabilityNi: ni("capability"), resource: "did:pkh:eip155:5615611:0x1111111111111111111111111111111111111111" }],
+  };
+  const actionId = (await (await handleMudApi(new Request(`https://gui.561.group/api/mud?actor=${controller}`), "read", { readSemioticExchangeHistory: async () => history, readWorkspaceTerritory: async () => territoryArtifact })).json()).restrictedArena.actions.find((action) => action.operation === "purchaseMove").id;
+  const calls = [];
+  const resourceReceipts = [{ type: "MeasuredResourceReceipt", input: "api-credit", amount: "1", unit: "request" }];
+  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/play", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ actor: controller, actionId, activity: { type: "Create", object: { type: "CloudEvent" } }, authority, resourceReceipts, transition: { operation: "purchaseMove", args: [demand, offer] } }) }), "play", {
+    readSemioticExchangeHistory: async () => history,
+    readWorkspaceTerritory: async () => territoryArtifact,
+    admitActivityPubCloudEventA2aRmn: async () => ({ carrierAdmissions: [cellCarrier, demandCarrier, offerCarrier], rmnSemanticDigest }),
+    zeroCustodyTransition: { transition: async (input) => { calls.push(input); return { type: "Create", object: { type: "CloudEvent" } }; } },
+  });
+  assert.equal(response.status, 202, await response.clone().text());
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0].transition, { operation: "purchaseMove", args: [demand, offer] });
+  assert.equal(calls[0].rmnSemanticDigest, rmnSemanticDigest);
+  assert.deepEqual(calls[0].authority, authority);
+  assert.deepEqual(calls[0].resourceReceipts, resourceReceipts);
+  assert.deepEqual(Object.keys(calls[0]).sort(), ["authority", "resourceReceipts", "rmnSemanticDigest", "transition"]);
 });
 
 test("an operator conversation becomes one canonical A2A/RMN request and real witnessed arena, never a browser transcript or invented chain move", async () => {
