@@ -229,3 +229,8 @@ test("the Worker-side reader accepts only the fixed live ledger from its VPC bin
   await assert.rejects(malformed.readSemioticExchangeHistory(), /malformed witness/u);
   await assert.rejects(createCloudMudServices().readSemioticExchangeHistory(), /not bound/u);
 });
+
+test("the browser face has no invented swarm-work gateway or work lifecycle custody", () => {
+  const services = createCloudMudServices({}, territoryArtifact);
+  assert.deepEqual(Object.keys(services).sort(), ["observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory"]);
+});
