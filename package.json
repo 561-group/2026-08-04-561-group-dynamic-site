@@ -18,8 +18,10 @@
     "cloudflare:reauthorize": "authenticate-linux-colony-with-cloudflare ops/cloudflare-authentication-request.json",
     "serve": "node src/server.ts",
     "test": "node --test test/*.test.mjs",
-    "check": "tsc --noEmit && node --check scripts/cloudflare-deployment.mjs && node --test test/*.test.mjs",
-    "verify:ephemeris-offer": "node scripts/verify-ephemeris-offer.mjs"
+    "check": "tsc --noEmit && node --check scripts/cloudflare-deployment.mjs && node --check scripts/assay-gui-public-delivery.mjs && node --test test/*.test.mjs",
+    "verify:ephemeris-offer": "node scripts/verify-ephemeris-offer.mjs",
+    "assay:gui-public-delivery": "node scripts/assay-gui-public-delivery.mjs",
+    "test:gui-public-delivery": "node --test test/assay-gui-public-delivery.test.mjs"
   },
   "exports": {
     ".": "./src/index.ts",
