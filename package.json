@@ -40,7 +40,7 @@
     "@red-cup-engineering/http-server": "0.0.0",
     "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.1",
     "@red-cup-engineering/web-gui-services-section": "github:red-cup-engineering/web-gui-services-section#v0.1.1",
-    "@red-cup-engineering/deployment-formation-contracts": "workspace:*"
+    "@red-cup-engineering/deployment-formation-contracts": "github:red-cup-engineering/deployment-formation-contracts#v0.1.0"
   },
   "devDependencies": {
     "@red-cup-engineering/linux-cloudflare-authentication-cell": "workspace:*",
