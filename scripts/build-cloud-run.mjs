@@ -23,6 +23,17 @@ writeFileSync(join(outputRoot, "package.json"), `${JSON.stringify({
   type: "module",
   scripts: { start: "node server.mjs" },
 }, null, 2)}\n`);
+writeFileSync(join(outputRoot, "Dockerfile"), `FROM node:22-slim
+WORKDIR /app
+COPY package.json worker.mjs server.mjs ./
+ENV NODE_ENV=production PORT=8080
+CMD ["node", "server.mjs"]
+`);
+writeFileSync(join(outputRoot, "cloudbuild.yaml"), `steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "--pull", "--tag", "${"${_IMAGE}"}", "."]
+images: ["${"${_IMAGE}"}"]
+`);
 writeFileSync(join(outputRoot, "server.mjs"), `import { createServer } from "node:http";
 import worker from "./worker.mjs";
 
