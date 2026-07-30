@@ -6,7 +6,9 @@ import { encodeRelationalValue } from "@red-cup-engineering/rmn-semantic-conform
 import { userRmnMessage } from "@red-cup-engineering/a2a-rmn-part-service";
 
 export const MUD_ACTOR = "urn:ame:modeled-union-dimension";
-export const MUD_LEDGER = Object.freeze({ chainId: "eip155:5615610", exchange: "0x98bBC65824962b61dF876A47B5779C4EcBBD4939" });
+// This browser projection is a strictly read-only witness of the live successor.
+// It has no signer or append path; the retired 5615610 ledger is archive evidence.
+export const MUD_LEDGER = Object.freeze({ chainId: "eip155:5615611", exchange: "0xc4234dc42c9d93bc7d61b0354aba2729ae52e322" });
 
 const headers = Object.freeze({ "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" });
 const workspaceObserverFamilies = new WeakMap();
