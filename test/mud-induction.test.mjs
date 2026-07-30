@@ -232,6 +232,10 @@ test("the Worker-side reader accepts only the fixed live ledger from its VPC bin
   await assert.rejects(createCloudMudServices().readSemioticExchangeHistory(), /not bound/u);
 });
 
+test("the browser face has no invented swarm-work gateway or work lifecycle custody", () => {
+  const services = createCloudMudServices({}, territoryArtifact);
+  assert.deepEqual(Object.keys(services).sort(), ["observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory"]);
+});
 
 test("shared GUI view leaves raw API intact",async()=>{const s={readSemioticExchangeHistory:async()=>history,readWorkspaceTerritory:async()=>territoryArtifact},raw=await(await handleMudApi(new Request("https://gui.561.group/api/mud"),"read",s)).json(),view=await(await handleMudApi(new Request("https://gui.561.group/api/mud?view=web-gui"),"read",s)).json();assert.equal(raw.type,"ModeledUnionDimensionBrowserProjection");assert.equal(view.kind,"web-gui.world-projection");assert.equal(view.entities.length,raw.territory.packages.length)});
 

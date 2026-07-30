@@ -108,44 +108,11 @@ export function createCloudMudServices(environment = {}, workspaceTerritoryArtif
         rpc,
       });
     },
-    async submitSwarmWork(activity) {
-      if (typeof environment.MUD_WORK_NETWORK?.fetch !== "function") throw unavailable("the AP/A2A work network is not bound");
-      return workNetworkExchange(environment.MUD_WORK_NETWORK, "/v1/work", { method: "POST", body: activity });
-    },
-    async readSwarmWork(workId) {
-      return workNetworkExchange(environment.MUD_WORK_NETWORK, `/v1/work/${workPath(workId)}`, { method: "GET" });
-    },
-    async cancelSwarmWork(workId, cancellation) {
-      return workNetworkExchange(environment.MUD_WORK_NETWORK, `/v1/work/${workPath(workId)}/cancel`, { method: "POST", body: cancellation });
-    },
     observeBoundaryTime() { return new Date().toISOString(); },
   });
 }
 
 function unavailable(message) { const error = new Error(message); error.status = 503; return error; }
-
-function workPath(workId) {
-  if (typeof workId !== "string" || !/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/u.test(workId)) throw Object.assign(new TypeError("one canonical work ni is required"), { status: 400 });
-  return encodeURIComponent(workId);
-}
-
-async function workNetworkExchange(binding, pathname, { method, body } = {}) {
-  if (typeof binding?.fetch !== "function") throw unavailable("the AP/A2A work network is not bound");
-  const response = await binding.fetch(`http://union-work-network.internal${pathname}`, {
-    method,
-    headers: { accept: "application/json", ...(body === undefined ? {} : { "content-type": "application/activity+json" }) },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  let value;
-  try { value = await response.json(); } catch { throw unavailable(`work network returned non-JSON HTTP ${response.status}`); }
-  if (!response.ok) {
-    const error = new Error(value?.error ?? value?.type ?? `work network returned HTTP ${response.status}`);
-    error.status = response.status;
-    error.receipt = value;
-    throw error;
-  }
-  return deepFreeze(value);
-}
 
 function deepFreeze(value) {
   if (value === null || typeof value !== "object" || Object.isFrozen(value)) return value;
