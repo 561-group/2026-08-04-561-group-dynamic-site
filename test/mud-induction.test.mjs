@@ -27,6 +27,12 @@ const territoryCarrier = createCarrierAdmissionReceipt({
   protocolVerificationReceiptNis: [ni("test-workspace-observation")],
 });
 const territoryArtifact = Object.freeze({ type: "ModeledUnionWorkspaceTerritoryArtifact", version: 1, carrierAdmissionReceipt: territoryCarrier });
+const witnessedSymbol = Object.freeze({
+  type: "NodeWorkspaceApiSymbol", version: 1, id: ni("symbol"), locus: `symbol:${ni("symbol")}`,
+  package: "@561-group/site", packagePath: "sites/561.group", module: "mud-face", file: "sites/561.group/src/mud-face.mjs",
+  name: "handleMudApi", kind: "function", signature: "export async function handleMudApi(request, endpoint, services = {})", documented: true,
+});
+const knowledgeTerritoryArtifact = Object.freeze({ ...territoryArtifact, apiSurfaceReceipt: { type: "NodeWorkspaceApiSurfaceReceipt", version: 1, id: ni("api-surface"), packages: [{ name: "@561-group/site", path: "sites/561.group", symbols: 1 }], symbols: [witnessedSymbol] } });
 
 function projectedWorkspaceTerritory() {
   const root = new URL("../.tmp/mud-territory/", import.meta.url);
@@ -87,6 +93,8 @@ test("the private MUD traverses every currently admitted workspace package throu
   assert.equal(response.status, 200);
   const state = await response.json();
   assert.equal(state.territory.packages.length, admittedPackages.length);
+  assert.equal(state.knowledge.symbols.length, artifact.apiSurfaceReceipt.symbols.length);
+  assert.ok(state.knowledge.symbols.some(({ name, locus }) => name === "handleMudApi" && locus.startsWith("symbol:ni:///sha-256;")));
   assert.ok(state.territory.packages.length >= 281);
   assert.equal(state.territory.dependencies.length, artifact.carrierAdmissionReceipt.carrier.value.relations.filter(({ scope }) => scope === "workspace").length);
   assert.ok(state.territory.dependencies.length >= 768);
@@ -142,7 +150,7 @@ test("the private face refuses a chain-only world without a sealed workspace ter
 test("writes fail closed when the injected carrier-admission and zero-custody transition boundary is absent", async () => {
   const response = await handleMudApi(new Request("https://gui.561.group/api/mud/play", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ actor: controller, actionId: ni("action"), activity: { type: "Create", object: { type: "CloudEvent" } }, authority: {}, resourceReceipts: [{ type: "MeasuredResourceReceipt" }], transition: { operation: "purchaseMove", args: [demand, offer] } }) }), "play", {});
   assert.equal(response.status, 503);
-  assert.equal((await response.json()).type, "SemioticExchangeActuatorUnavailable");
+  assert.equal((await response.json()).type, "MudCloudBoundaryObstruction");
 });
 
 test("a play request admits one exact carrier and forwards exactly one restricted move to the injected zero-custody actuator", async () => {
@@ -155,6 +163,7 @@ test("a play request admits one exact carrier and forwards exactly one restricte
   const calls = [];
   const resourceReceipts = [{ type: "MeasuredResourceReceipt", input: "api-credit", amount: "1", unit: "request" }];
   const response = await handleMudApi(new Request("https://gui.561.group/api/mud/play", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ actor: controller, actionId, activity: { type: "Create", object: { type: "CloudEvent" } }, authority, resourceReceipts, transition: { operation: "purchaseMove", args: [demand, offer] } }) }), "play", {
+    membrane: { enabled: true },
     readSemioticExchangeHistory: async () => history,
     readWorkspaceTerritory: async () => territoryArtifact,
     admitActivityPubCloudEventA2aRmn: async () => ({ carrierAdmissions: [cellCarrier, demandCarrier, offerCarrier], rmnSemanticDigest }),
@@ -169,7 +178,7 @@ test("a play request admits one exact carrier and forwards exactly one restricte
   assert.deepEqual(Object.keys(calls[0]).sort(), ["authority", "resourceReceipts", "rmnSemanticDigest", "transition"]);
 });
 
-test("an operator conversation becomes one canonical A2A/RMN request and real witnessed arena, never a browser transcript or invented chain move", async () => {
+test("an operator conversation submits one canonical ActivityPub CloudEvent A2A/RMN demand and returns its interaction receipt", async () => {
   const response = await handleMudApi(new Request("https://gui.561.group/api/mud/conversation", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -177,18 +186,53 @@ test("an operator conversation becomes one canonical A2A/RMN request and real wi
   }), "conversation", {
     readSemioticExchangeHistory: async () => history,
     readWorkspaceTerritory: async () => territoryArtifact,
+    submitMudDemand: async (submission) => {
+      assert.equal(submission.activity.type, "Create");
+      assert.equal(submission.activity.object.type, "CloudEvent");
+      assert.equal(submission.activity.object.data.role, "ROLE_USER");
+      return { type: "MudDemandReceipt", interactionNi: ni("interaction"), demandNi: ni("demand"), activityId: "https://federation.example/activities/1", status: "accepted" };
+    },
   });
   assert.equal(response.status, 202, await response.clone().text());
   const value = await response.json();
-  assert.equal(value.type, "ModeledUnionConversationProjection");
+  assert.equal(value.type, "ModeledUnionConversationReceipt");
   assert.match(value.intentNi, /^ni:\/\/\/sha-256;/u);
+  assert.match(value.interactionNi, /^ni:\/\/\/sha-256;/u);
   assert.equal(value.a2aUserMessage.role, "ROLE_USER");
   assert.equal(value.a2aUserMessage.parts.length, 1);
   assert.equal(value.a2aUserMessage.parts[0].mediaType, "application/rmn+cbor");
   assert.equal(value.restrictedArena.type, "RestrictedModeledUnionArena");
   assert.ok(value.participants.some(({ type }) => type === "SemioticCellLocus"));
-  assert.match(value.durability, /not a hidden transcript or a chain write/u);
-  assert.doesNotMatch(JSON.stringify(value), /DemandRaised|chainAppend.*submitted/u);
+  assert.match(value.resultEvents, /\/api\/mud\/conversation\//u);
+  assert.match(value.durability, /not a result or receiver acceptance/u);
+  assert.doesNotMatch(JSON.stringify(value), /SwarmMessageResult|"provider":|"model":|DemandRaised/u);
+});
+
+test("conversation refuses submission when the MUD ActivityPub demand actor is absent", async () => {
+  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/conversation", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: "hello", locus: cell }),
+  }), "conversation", { readSemioticExchangeHistory: async () => history, readWorkspaceTerritory: async () => territoryArtifact });
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /MUD ActivityPub demand actor is not bound/u);
+});
+
+test("a symbol annotation and semiotic-atom fabrication nomination enter the swarm as one addressed RMN demand", async () => {
+  let submitted;
+  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/conversation", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+      text: "Label handleMudApi and nominate it for fabrication as a semiotic atom.",
+      locus: witnessedSymbol.locus,
+      annotation: { labels: ["boundary", "api"], note: "This is a reusable admission boundary.", nomination: "semiotic-atom-fabrication" },
+    }),
+  }), "conversation", {
+    readSemioticExchangeHistory: async () => history,
+    readWorkspaceTerritory: async () => knowledgeTerritoryArtifact,
+    submitMudDemand: async (value) => { submitted = value; return { type: "MudDemandReceipt", interactionNi: ni("annotation-interaction") }; },
+  });
+  assert.equal(response.status, 202, await response.clone().text());
+  assert.equal((await response.json()).locus, witnessedSymbol.locus);
+  assert.equal(submitted.type, "MudDemandSubmission");
+  assert.equal(submitted.activity.object.data.parts[0].mediaType, "application/rmn+cbor");
 });
 
 test("conversation refuses an unwitnessed address rather than making a parallel locus", async () => {
@@ -278,7 +322,23 @@ test("the Worker composes play only through fixed private carrier-admission and 
   await assert.rejects(createCloudMudServices({}, territoryArtifact).zeroCustodyTransition.transition({}), /not bound/u);
 });
 
-test("the browser face has no invented swarm-work gateway or work lifecycle custody", () => {
+test("the Worker submits conversation demand only through the private MUD actor, never a public messages gateway", async () => {
+  const calls = [];
+  const services = createCloudMudServices({
+    MUD_DEMAND_ACTOR: { fetch: async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({ type: "MudDemandReceipt", interactionNi: ni("interaction") });
+    } },
+  }, territoryArtifact);
+  const result = await services.submitMudDemand({ type: "MudDemandSubmission" });
+  assert.equal(result.type, "MudDemandReceipt");
+  assert.deepEqual(calls.map(({ url, init }) => ({ url, method: init.method, body: JSON.parse(init.body) })), [{
+    url: "http://mud-demand-actor.internal/v1/mud/demands", method: "POST", body: { type: "MudDemandSubmission" },
+  }]);
+  await assert.rejects(createCloudMudServices({}, territoryArtifact).submitMudDemand({}), /not bound/u);
+});
+
+test("the browser face exposes only the admitted MUD demand actor and retains no work lifecycle custody", () => {
   const services = createCloudMudServices({}, territoryArtifact);
-  assert.deepEqual(Object.keys(services).sort(), ["admitActivityPubCloudEventA2aRmn", "observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory", "zeroCustodyTransition"]);
+  assert.deepEqual(Object.keys(services).sort(), ["admitActivityPubCloudEventA2aRmn", "membrane", "observeBoundaryTime", "readSemioticExchangeHistory", "readWorkspaceTerritory", "streamMudDemand", "submitMudDemand", "zeroCustodyTransition"]);
 });

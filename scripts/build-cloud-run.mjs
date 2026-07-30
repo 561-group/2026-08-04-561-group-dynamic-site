@@ -41,8 +41,12 @@ const port = Number.parseInt(process.env.PORT ?? "8080", 10);
 const operatorEmail = process.env.IAP_OPERATOR_EMAIL ?? "";
 const publicProjection = process.env.MUD_PUBLIC_PROJECTION ?? "";
 const chainReaderOrigin = new URL(process.env.MUD_CHAIN_READER_ORIGIN ?? "http://10.128.0.2:8563");
+const mudDemandActorOrigin = new URL(process.env.MUD_DEMAND_ACTOR_ORIGIN ?? "http://mud-demand-actor.internal");
 if (chainReaderOrigin.protocol !== "http:" || chainReaderOrigin.hostname !== "10.128.0.2" || chainReaderOrigin.port !== "8563") {
   throw new Error("MUD_CHAIN_READER_ORIGIN must name the fixed private history reader");
+}
+if (mudDemandActorOrigin.protocol !== "http:" || !mudDemandActorOrigin.hostname.endsWith(".internal")) {
+  throw new Error("MUD_DEMAND_ACTOR_ORIGIN must name the private MUD ActivityPub actor");
 }
 const environment = Object.freeze({
   IAP_OPERATOR_EMAIL: operatorEmail,
@@ -51,6 +55,13 @@ const environment = Object.freeze({
     async fetch(input, init) {
       const response = await fetch(new URL("/", chainReaderOrigin), init);
       if (!response.ok) console.error("chain reader refusal", response.status, await response.clone().text());
+      return response;
+    },
+  }),
+  MUD_DEMAND_ACTOR: Object.freeze({
+    async fetch(_input, init) {
+      const response = await fetch(new URL("/v1/mud/demands", mudDemandActorOrigin), init);
+      if (!response.ok) console.error("MUD demand actor refusal", response.status, await response.clone().text());
       return response;
     },
   }),
