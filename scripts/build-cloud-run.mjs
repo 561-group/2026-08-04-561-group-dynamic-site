@@ -40,8 +40,8 @@ import worker from "./worker.mjs";
 const port = Number.parseInt(process.env.PORT ?? "8080", 10);
 const operatorEmail = process.env.IAP_OPERATOR_EMAIL ?? "";
 const publicProjection = process.env.MUD_PUBLIC_PROJECTION ?? "";
-const chainReaderOrigin = new URL(process.env.MUD_CHAIN_READER_ORIGIN ?? "http://10.128.0.2:8562");
-if (chainReaderOrigin.protocol !== "http:" || chainReaderOrigin.hostname !== "10.128.0.2" || chainReaderOrigin.port !== "8562") {
+const chainReaderOrigin = new URL(process.env.MUD_CHAIN_READER_ORIGIN ?? "http://10.128.0.2:8563");
+if (chainReaderOrigin.protocol !== "http:" || chainReaderOrigin.hostname !== "10.128.0.2" || chainReaderOrigin.port !== "8563") {
   throw new Error("MUD_CHAIN_READER_ORIGIN must name the fixed private history reader");
 }
 const environment = Object.freeze({
@@ -49,7 +49,7 @@ const environment = Object.freeze({
   MUD_PUBLIC_PROJECTION: publicProjection,
   MUD_CHAIN_READER: Object.freeze({
     async fetch(input, init) {
-      const response = await fetch(new URL(new URL(input).pathname, chainReaderOrigin), init);
+      const response = await fetch(new URL("/", chainReaderOrigin), init);
       if (!response.ok) console.error("chain reader refusal", response.status, await response.clone().text());
       return response;
     },

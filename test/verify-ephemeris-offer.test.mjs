@@ -113,7 +113,7 @@ test("gui.561.group is an Access-admitted projection of only the cloud-chain wit
     assert.equal(read.status, 200);
     assert.equal(read.headers.get("access-control-allow-origin"), null);
     const state = await read.json();
-    assert.deepEqual(state.presentation.ledger, { chainId: "eip155:5615610", exchange: "0x98bBC65824962b61dF876A47B5779C4EcBBD4939" });
+    assert.deepEqual(state.presentation.ledger, { chainId: "eip155:5615611", exchange: "0xc4234dc42c9d93bc7d61b0354aba2729ae52e322" });
     assert.deepEqual(state.presentation.events, []);
 
     const play = await generatedWorker.fetch(access.request("https://gui.561.group/api/mud/play", { method: "POST" }), environment);
