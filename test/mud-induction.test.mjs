@@ -50,39 +50,6 @@ test("the browser face projects its loci and arena from live SemioticExchange hi
   assert.ok(state.cells.every(({ id: locus }) => !["bamboo-court", "jade-gate", "cloud-bridge"].includes(locus)));
 });
 
-test("the browser face absorbs legacy Teraum topology as a lawful local perception", async () => {
-  const response = await handleMudApi(new Request(`https://gui.561.group/api/mud?actor=${controller}&world-locus=caliper-street`), "read", {
-    readSemioticExchangeHistory: async () => settledHistory,
-    readWorkspaceTerritory: async () => territoryArtifact,
-  });
-  assert.equal(response.status, 200);
-  const state = await response.json();
-  assert.equal(state.world.type, "TeraumLocalPerception");
-  assert.equal(state.world.owner, "@561-group/site:/api/mud");
-  assert.equal(state.world.position, "caliper-street");
-  assert.deepEqual(state.world.exits, [{ direction: "114", target: "twisted-alembic", lawful: true }]);
-  assert.equal(state.world.settlements.length, 1);
-  assert.ok(state.world.obstructions.every(({ position }) => position === "caliper-street"));
-});
-
-test("a directional controller gesture becomes a canonical local lawful move, not browser world state", async () => {
-  const response = await handleMudApi(new Request("https://gui.561.group/api/mud/conversation", {
-    method: "POST", headers: { "content-type": "application/json" },
-    body: JSON.stringify({ text: "walk east", locus: cell, worldMove: { from: "central-plains", direction: "east" } }),
-  }), "conversation", {
-    readSemioticExchangeHistory: async () => history,
-    readWorkspaceTerritory: async () => territoryArtifact,
-  });
-  assert.equal(response.status, 202, await response.clone().text());
-  const value = await response.json();
-  assert.deepEqual(value.worldMove, {
-    type: "TeraumLawfulLocalMove", from: "central-plains", direction: "east", to: "farsteppes",
-    durability: "observer-local until a separately enabled settlement move changes the witnessed world",
-  });
-  assert.equal(value.world.position, "farsteppes");
-  assert.doesNotMatch(JSON.stringify(value), /chainAppend.*submitted/u);
-});
-
 test("the browser projection groups witnessed demand moves into causal threads and preserves frozen arena joints", async () => {
   const response = await handleMudApi(new Request(`https://gui.561.group/api/mud?actor=${controller}`), "read", {
     readSemioticExchangeHistory: async () => settledHistory,

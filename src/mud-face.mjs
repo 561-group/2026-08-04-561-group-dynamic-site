@@ -12,34 +12,6 @@ const headers = Object.freeze({ "content-type": "application/json; charset=utf-8
 const workspaceObserverFamilies = new WeakMap();
 const witnessedProjections = new WeakMap();
 
-// The former Elisp browser world carried small, named local perceptions; the
-// Racket MUD carried reciprocal region links and its Green Delta spawn point.
-// This is the normalized, deliberately bounded transport of those dimensions
-// into the deployed browser-face owner.  It is an observer chart, not a second
-// world database: chain settlement remains the source of changes to the wider
-// modeled-union dimension.
-const TERAUM_WORLD = Object.freeze({
-  type: "TeraumWorldTopology",
-  version: 1,
-  owner: "@561-group/site:/api/mud",
-  spawn: "green-delta",
-  origins: Object.freeze([
-    "git:blob:f85a20e50b5c22c50a580fc24116f97c1e882216",
-    "git:blob:55538eaf1321dacb6692901be7d69f87db151d2a",
-  ]),
-  places: Object.freeze([
-    Object.freeze({ id: "green-delta", name: "Green Delta", description: "A fertile region, dense with farms and small villages.", exits: Object.freeze({ east: "central-plains", southeast: "gloaming", south: "widewoods", west: "optic-ocean" }) }),
-    Object.freeze({ id: "central-plains", name: "Central Plains", description: "A regional crossing in Teraum.", exits: Object.freeze({ north: "gloaming", west: "cut", east: "farsteppes" }) }),
-    Object.freeze({ id: "cut", name: "The Cut", description: "A western region joined to the Central Plains.", exits: Object.freeze({ south: "central-plains" }) }),
-    Object.freeze({ id: "farsteppes", name: "Farsteppes", description: "An eastern region joined to the Central Plains.", exits: Object.freeze({ west: "central-plains" }) }),
-    Object.freeze({ id: "gloaming", name: "Gloaming", description: "A northern region joined to the Central Plains.", exits: Object.freeze({ south: "central-plains" }) }),
-    Object.freeze({ id: "widewoods", name: "Widewoods", description: "The southern approach from Green Delta.", exits: Object.freeze({}) }),
-    Object.freeze({ id: "optic-ocean", name: "Optic Ocean", description: "The western approach from Green Delta.", exits: Object.freeze({}) }),
-    Object.freeze({ id: "caliper-street", name: "Caliper Street", description: "This is Caliper Street.", exits: Object.freeze({ "114": "twisted-alembic" }) }),
-    Object.freeze({ id: "twisted-alembic", name: "Twisted Alembic", description: "This is the Twisted Alembic.", exits: Object.freeze({ south: "caliper-street" }) }),
-  ]),
-});
-
 function decodeBase64Url(value) {
   if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/u.test(value)) throw new TypeError("invalid JWT base64url segment");
   const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
@@ -240,25 +212,7 @@ function causalFlow(presentation, arena) {
   });
 }
 
-function worldProjection({ locus = TERAUM_WORLD.spawn, arena, presentation }) {
-  const placeById = new Map(TERAUM_WORLD.places.map((place) => [place.id, place]));
-  const place = placeById.get(locus) ?? placeById.get(TERAUM_WORLD.spawn);
-  const exits = Object.entries(place.exits).map(([direction, target]) => Object.freeze({ direction, target, lawful: placeById.has(target) }));
-  const obstructions = arena.actions.filter(({ available }) => !available).map(({ id, operation, unavailability }) => Object.freeze({ id, operation, position: place.id, reason: unavailability ?? "restricted by the witnessed arena" }));
-  const settlements = presentation.events.filter(({ kind }) => kind === "DemandSettled").map((event) => Object.freeze({ id: eventProjectionId(event), position: place.id, result: event.result ?? null }));
-  return Object.freeze({
-    type: "TeraumLocalPerception",
-    topology: TERAUM_WORLD.type,
-    owner: TERAUM_WORLD.owner,
-    position: place.id,
-    place: Object.freeze({ id: place.id, name: place.name, description: place.description }),
-    exits: Object.freeze(exits),
-    obstructions: Object.freeze(obstructions),
-    settlements: Object.freeze(settlements),
-  });
-}
-
-function publicState(dimension, actor, worldLocus) {
+function publicState(dimension, actor) {
   const presentation = dimension.presentation();
   const arena = dimension.restrictedArena(actor);
   const cells = presentation.loci.map((locus) => Object.freeze({ id: locus.id, charge: locus.support?.charge ?? locus.four?.charge ?? "absurd", phase: locus.phase, type: locus.type }));
@@ -280,7 +234,7 @@ function publicState(dimension, actor, worldLocus) {
     }))),
     dependencies: presentation.territoryFoam.relations,
   });
-  const projection = Object.freeze({
+  return Object.freeze({
     type: "ModeledUnionDimensionBrowserProjection",
     actor: dimension.actor,
     geometry: gyrobifastigiumJ26,
@@ -299,17 +253,16 @@ function publicState(dimension, actor, worldLocus) {
     restrictedArena: arena,
     causalFlow: causalFlow(presentation, arena),
   });
-  return Object.freeze({ ...projection, world: worldProjection({ locus: worldLocus, arena, presentation }) });
 }
 
-function witnessedProjection(history, territory, actor, worldLocus) {
+function witnessedProjection(history, territory, actor) {
   let projections = witnessedProjections.get(territory);
   if (projections === undefined) {
     projections = new Map();
     witnessedProjections.set(territory, projections);
   }
   const historyKey = history.map((event) => `${event.kind}:${event.chainPosition.blockNumber}:${event.chainPosition.logIndex}:${event.carrierNi}`).join("|");
-  const key = `${actor}\n${worldLocus ?? TERAUM_WORLD.spawn}\n${historyKey}`;
+  const key = `${actor}\n${historyKey}`;
   const prior = projections.get(key);
   if (prior !== undefined) return prior;
   const dimension = createModeledUnionDimension({
@@ -319,7 +272,7 @@ function witnessedProjection(history, territory, actor, worldLocus) {
     missionLaw: territory.observationReceipt?.missionLaw ?? null,
     ...MUD_LEDGER,
   });
-  const projection = publicState(dimension, actor, worldLocus);
+  const projection = publicState(dimension, actor);
   projections.clear();
   projections.set(key, projection);
   return projection;
@@ -340,22 +293,13 @@ function canonical(value) {
 async function admitConversation(request, services) {
   let input;
   try { input = await request.json(); } catch { return json({ type: "ModeledUnionConversationRefusal", error: "one JSON conversation request is required" }, 400); }
-  const requestedMove = input?.worldMove;
   const text = typeof input?.text === "string" ? input.text.trim() : "";
-  if (text.length > 4096 || (text.length < 1 && requestedMove === undefined)) return json({ type: "ModeledUnionConversationRefusal", error: "conversation text must contain 1 through 4096 Unicode code units unless one world move is supplied" }, 400);
+  if (text.length < 1 || text.length > 4096) return json({ type: "ModeledUnionConversationRefusal", error: "conversation text must contain 1 through 4096 Unicode code units" }, 400);
   if (typeof services.readSemioticExchangeHistory !== "function" || typeof services.readWorkspaceTerritory !== "function") return json({ type: "ModeledUnionConversationRefusal", error: "the live witnessed dimension is unavailable" }, 503);
   const actor = typeof input.actor === "string" && input.actor.length > 0 ? input.actor : "0x0000000000000000000000000000000000000000";
   const history = await services.readSemioticExchangeHistory();
   const territory = deepFreeze(await services.readWorkspaceTerritory());
-  const sourcePosition = typeof requestedMove?.from === "string" ? requestedMove.from : TERAUM_WORLD.spawn;
-  const projection = witnessedProjection(history, territory, actor, sourcePosition);
-  let worldMove = null;
-  if (requestedMove !== undefined) {
-    const direction = typeof requestedMove?.direction === "string" ? requestedMove.direction : "";
-    const exit = projection.world.exits.find((candidate) => candidate.direction === direction);
-    if (!exit?.lawful) return json({ type: "ModeledUnionConversationRefusal", error: "the requested gesture has no lawful witnessed world exit" }, 409);
-    worldMove = Object.freeze({ type: "TeraumLawfulLocalMove", from: projection.world.position, direction, to: exit.target, durability: "observer-local until a separately enabled settlement move changes the witnessed world" });
-  }
+  const projection = witnessedProjection(history, territory, actor);
   const availableLoci = new Set([
     ...projection.cells.map(({ id }) => id),
     ...projection.territory.packages.map(({ id }) => id),
@@ -369,7 +313,6 @@ async function admitConversation(request, services) {
     actor,
     locus,
     text,
-    worldMove,
     territory: projection.territory.id,
     missionLaw: projection.missionLaw?.carrierNi ?? null,
     causalPredecessors: projection.presentation.events.map((event) => `event:${event.chainPosition.blockNumber}:${event.chainPosition.logIndex}`),
@@ -392,12 +335,10 @@ async function admitConversation(request, services) {
     intentNi: intent.ni,
     a2aUserMessage: message,
     locus,
-    worldMove,
-    world: worldMove === null ? projection.world : worldProjection({ locus: worldMove.to, arena: projection.restrictedArena, presentation: projection.presentation }),
     participants: projection.presentation.loci.map(({ id, type, phase, controller, law, support }) => ({ id, type, phase, controller: controller ?? null, law: law ?? null, charge: support?.charge ?? "absurd" })),
     restrictedArena: projection.restrictedArena,
     causalFollowups: projection.presentation.relations.filter(({ type }) => type === "causallyFollows"),
-    durability: "This is an A2A/RMN boundary admission, not a hidden transcript or a chain write. A world gesture changes only this local perception; select an enabled restricted move to request an actuator.",
+    durability: "This is an A2A/RMN boundary admission, not a hidden transcript or a chain write. Select an enabled restricted move to request an actuator.",
   }, 202);
 }
 
@@ -412,11 +353,10 @@ export async function handleMudApi(request, endpoint, services = {}) {
     if (typeof services.readSemioticExchangeHistory !== "function") return json({ type: "SemioticExchangeReadUnavailable", error: "a live SemioticExchange history source is not bound" }, 503);
     const url = new URL(request.url);
     const actor = url.searchParams.get("actor") ?? "0x0000000000000000000000000000000000000000";
-    const worldLocus = url.searchParams.get("world-locus") ?? TERAUM_WORLD.spawn;
     const history = await services.readSemioticExchangeHistory();
     if (typeof services.readWorkspaceTerritory !== "function") return json({ type: "WorkspaceTerritoryReadUnavailable", error: "a content-addressed workspace territory is not bound" }, 503);
     const territory = deepFreeze(await services.readWorkspaceTerritory());
-    return json(witnessedProjection(history, territory, actor, worldLocus));
+    return json(witnessedProjection(history, territory, actor));
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 400;
     return json({ error: error instanceof Error ? error.message : String(error) }, status);
