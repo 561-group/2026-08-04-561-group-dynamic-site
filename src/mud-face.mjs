@@ -365,7 +365,8 @@ export async function handleMudApi(request, endpoint, services = {}) {
     const history = await services.readSemioticExchangeHistory();
     if (typeof services.readWorkspaceTerritory !== "function") return json({ type: "WorkspaceTerritoryReadUnavailable", error: "a content-addressed workspace territory is not bound" }, 503);
     const territory = deepFreeze(await services.readWorkspaceTerritory());
-    const projection = witnessedProjection(history, territory, actor);\n    return json(url.searchParams.get("view") === "web-gui" ? projectMudWebGui(projection) : projection);
+    const projection = witnessedProjection(history, territory, actor);
+    return json(url.searchParams.get("view") === "web-gui" ? projectMudWebGui(projection) : projection);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 400;
     return json({ error: error instanceof Error ? error.message : String(error) }, status);
