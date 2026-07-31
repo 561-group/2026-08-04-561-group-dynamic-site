@@ -6,7 +6,7 @@ import {
   preflightCloudflareDeployment,
   readCloudflareDeploymentRequest
 } from "../scripts/cloudflare-deployment.mjs";
-import { LinuxCloudflareAuthenticationRefusal } from "@red-cup-engineering/linux-cloudflare-authentication-cell";
+import { LinuxCloudflareAuthenticationRefusal } from "@red-cup-engineering/linux-cloudflare-authentication-service";
 
 test("site authentication request binds the one named profile and account", async () => {
   const request = await readCloudflareDeploymentRequest();
