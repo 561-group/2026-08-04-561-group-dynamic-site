@@ -15,7 +15,7 @@ export function reconcileMudCloudBoundary(input) {
   try {
     if (input === null || typeof input !== "object") return obstruction("membrane evidence is absent");
     const manifest = receipt(input.deploymentManifest, "deployment manifest");
-    if (manifest.chain?.caip2 !== MUD_CHAIN || manifest.contracts?.some((entry) => entry.address === "unknown" || entry.runtimeBytecodeHash === "unknown")) return obstruction("deployment manifest is not a verified 5615611 deployment");
+    if (manifest.chain?.caip2 !== MUD_CHAIN || manifest.contracts?.some((entry) => entry.address === "unknown" || entry.runtimeBytecodeHash === "unknown")) return obstruction("deployment manifest is not a verified deployment on the configured MUD_CHAIN");
     const exchange = manifest.contracts?.find((entry) => entry.contractName === "SemioticExchange" || entry.standard === "org.emsenn.evm.semiotic-exchange.v1");
     if (exchange?.address?.toLowerCase() !== MUD_EXCHANGE) return obstruction("deployment manifest has the wrong exchange address");
     const reconciliation = receipt(input.reconciliationReceipt, "finalized indexer reconciliation");

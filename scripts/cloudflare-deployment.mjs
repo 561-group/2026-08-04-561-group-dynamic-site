@@ -7,13 +7,13 @@ import { fileURLToPath } from "node:url";
 import {
   inspectLinuxCloudflareAuthentication,
   LinuxCloudflareAuthenticationRefusal
-} from "@red-cup-engineering/linux-cloudflare-authentication-cell";
+} from "@red-cup-engineering/linux-cloudflare-authentication-service";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const siteRoot = join(scriptDirectory, "..");
 const requestPath = join(siteRoot, "ops", "cloudflare-authentication-request.json");
 const wranglerPath = join(siteRoot, "node_modules", ".bin", "wrangler");
-const secretToolPath = fileURLToPath(import.meta.resolve("@red-cup-engineering/linux-cloudflare-authentication-cell/libexec/secret-tool"));
+const secretToolPath = fileURLToPath(import.meta.resolve("@red-cup-engineering/linux-cloudflare-authentication-service/libexec/secret-tool"));
 const compatibilityDirectory = dirname(secretToolPath);
 const reauthorizeCommand = "node_modules/.bin/authenticate-linux-colony-with-cloudflare ops/cloudflare-authentication-request.json";
 

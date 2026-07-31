@@ -27,20 +27,20 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@red-cup-engineering/a2a-rmn-part-service": "workspace:*",
-    "@harmonious-union/inference-work-lot-service": "workspace:*",
-    "@lenticule-science/articulating": "workspace:*",
-    "@red-cup-engineering/ethereum-services-section": "workspace:*",
-    "@red-cup-engineering/modeled-union-dimension": "workspace:*",
+    "@red-cup-engineering/a2a-rmn-part-service": "1.0.0",
+    "@harmonious-union/inference-work-lot-service": "4.0.0",
+    "@lenticule-science/articulating": "0.1.1",
+    "@red-cup-engineering/ethereum-services-section": "0.7.2",
+    "@red-cup-engineering/modeled-union-dimension": "0.1.3",
     "@red-cup-engineering/rmn-semantic-conformance": "6.0.1",
-    "@red-cup-engineering/typed-resource-catalog": "workspace:*",
+    "@red-cup-engineering/typed-resource-catalog": "0.1.1",
     "@red-cup-engineering/561-group-website-theme": "0.0.1",
-    "@red-cup-engineering/http-server": "0.0.0",
+    "@red-cup-engineering/http-server": "0.0.2",
     "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.1",
     "@red-cup-engineering/web-gui-services-section": "github:red-cup-engineering/web-gui-services-section#v0.1.1"
   },
   "devDependencies": {
-    "@red-cup-engineering/linux-cloudflare-authentication-cell": "workspace:*",
+    "@red-cup-engineering/linux-cloudflare-authentication-service": "0.1.1",
     "@types/node": "^22.0.0",
     "typescript": "^5.8.0",
     "wrangler": "4.114.0"
@@ -51,38 +51,5 @@
     "open-source",
     "x402",
     "sponsorship"
-  ],
-  "x-semiotic-voxel": {
-    "profile": "org.harmonious-union.semiotic-voxel.v1",
-    "owner": "561-group",
-    "kind": "capability-cell",
-    "actor": "urn:ame:site",
-    "operations": [
-      "project-modeled-union-dimension",
-      "preflight-cloudflare-deployment",
-      "deploy-cloudflare-worker",
-      "build-cloud-run-projection"
-    ],
-    "capabilities": [
-      {
-        "capability": "modeled-union-dimension-browser-face",
-        "faces": [
-          "gui.561.group",
-          "restricted-arena",
-          "gyrobifastigium-j26",
-          "four-charge"
-        ]
-      },
-      {
-        "capability": "cloudflare-worker-projection",
-        "faces": [
-          "named-profile",
-          "linux-secret-service",
-          "typed-authentication-refusal",
-          "gui.561.group"
-        ]
-      }
-    ],
-    "package": "@561-group/site"
-  }
+  ]
 }

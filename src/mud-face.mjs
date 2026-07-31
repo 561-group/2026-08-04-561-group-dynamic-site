@@ -1,6 +1,6 @@
 import { renderWebGuiDocument } from "@red-cup-engineering/web-gui-services-section";
 import { createCarrierAdmissionReceipt, createModeledUnionDimension } from "@red-cup-engineering/modeled-union-dimension";
-import { readSemioticExchangeEvents } from "../../../services/red-cup-engineering/services/software-services-section/services/blockchain-services-section/services/ethereum-services-section/src/semiotic-exchange-events.mjs";
+import { readSemioticExchangeEvents } from "@red-cup-engineering/ethereum-services-section/src/semiotic-exchange-events.mjs";
 import { gyrobifastigiumJ26 } from "@lenticule-science/articulating/predicating/geometry/spatial";
 import { semanticBytes, semanticId } from "@red-cup-engineering/rmn-semantic-conformance";
 import { encodeRelationalValue } from "@red-cup-engineering/rmn-semantic-conformance/relational-value";
@@ -9,7 +9,7 @@ import { mudBoundaryFromEnvironment } from "./mud-cloud-boundary.mjs";
 
 export const MUD_ACTOR = "urn:ame:modeled-union-dimension";
 // This browser projection is a strictly read-only witness of the live successor.
-// It has no signer or append path; the retired 5615610 ledger is archive evidence.
+// It has no signer or append path; the retired predecessor ledger is archive evidence.
 export const MUD_LEDGER = Object.freeze({ chainId: "eip155:5615611", exchange: "0xc4234dc42c9d93bc7d61b0354aba2729ae52e322" });
 
 const headers = Object.freeze({ "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" });
