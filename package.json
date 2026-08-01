@@ -1,6 +1,6 @@
 {
   "name": "@561-group/site",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Deployable 561.group apex site.",
@@ -27,16 +27,16 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@red-cup-engineering/a2a-rmn-part-service": "1.0.0",
-    "@harmonious-union/inference-work-lot-service": "4.0.0",
+    "@red-cup-engineering/a2a-rmn-part-service": "1.0.1",
+    "@harmonious-union/inference-work-lot-service": "4.0.1",
     "@lenticule-science/articulating": "0.1.1",
     "@red-cup-engineering/ethereum-services-section": "0.7.2",
-    "@red-cup-engineering/modeled-union-dimension": "0.1.3",
-    "@red-cup-engineering/rmn-semantic-conformance": "6.0.1",
-    "@red-cup-engineering/typed-resource-catalog": "0.1.1",
-    "@red-cup-engineering/561-group-website-theme": "0.0.1",
+    "@red-cup-engineering/modeled-union-dimension": "0.1.4",
+    "@red-cup-engineering/rmn-semantic-conformance": "6.0.2",
+    "@red-cup-engineering/typed-resource-catalog": "0.1.2",
+    "@red-cup-engineering/561-group-website-theme": "0.0.2",
     "@red-cup-engineering/http-server": "0.0.2",
-    "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.1"
+    "@red-cup-engineering/organizing-with-the-semantic-web": "0.0.0"
   },
   "devDependencies": {
     "@red-cup-engineering/linux-cloudflare-authentication-service": "0.1.1",
