@@ -32,7 +32,7 @@
     "@lenticule-science/articulating": "0.1.1",
     "@red-cup-engineering/ethereum-services-section": "0.7.2",
     "@red-cup-engineering/modeled-union-dimension": "0.1.4",
-    "@red-cup-engineering/rmn-semantic-conformance": "6.0.2",
+    "@red-cup-engineering/relation-model-notation-runtime": "7.0.0",
     "@red-cup-engineering/typed-resource-catalog": "0.1.2",
     "@red-cup-engineering/561-group-website-theme": "0.0.2",
     "@red-cup-engineering/http-server": "0.0.2",
