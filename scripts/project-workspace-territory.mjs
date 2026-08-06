@@ -31,14 +31,6 @@ const resources = await Promise.all(packageAdmissions.map(async ({ path }, index
 const catalogReceipt = catalogNodeWorkspaceSources({ resources });
 const apiSurfaceReceipt = await observeWorkspaceApiSurface(workspaceRoot, packageAdmissions);
 const workspaceDefinition = await readFile(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
-const missionLaw = Object.freeze({
-  type: "ModeledUnionMissionLawLocus",
-  locus: "law:semiotic-foam-one-machine",
-  // The retired root mission document is not copied into this private Worker;
-  // its already-admitted semantic address remains the witnessed law coordinate.
-  carrierNi: "ni:///sha-256;RSyKg2hdU_EdC_L5HKXutC-PeP4Di6zsv909PElLFec",
-  language: "rmn/v2",
-});
 const observationBody = {
   type: "NodeWorkspaceTerritoryObservationReceipt",
   version: 1,
@@ -47,7 +39,6 @@ const observationBody = {
   apiSurfaceReceiptNi: apiSurfaceReceipt.id,
   packageManifestNis: catalogReceipt.packages.map(({ manifestEvidence }) => manifestEvidence).sort(),
   denominator: catalogReceipt.denominator,
-  missionLaw,
 };
 const observationReceipt = { ...observationBody, id: semanticId(observationBody) };
 const carrierAdmissionReceipt = createCarrierAdmissionReceipt({
