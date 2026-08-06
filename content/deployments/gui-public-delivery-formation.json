@@ -1,0 +1,14 @@
+{
+  "type": "PublicDeliverySolicitation",
+  "formationType": "PublicDeliveryFormation",
+  "customer": "urn:561-group:site",
+  "formationDigest": "ni:///sha-256;SeZlSE_zmHHj28mWg4fymKj3Bk4fGpX177E_UZ5x0eg",
+  "artifactDigest": "ni:///sha-256;NMdYHIuMsxAysxemN4vrt3UgZ-Pty8SeSQ8AMqaeyJU",
+  "targetDigest": "ni:///sha-256;3Rr7S87740iAsGzN2pp1ofdr_QEXVj97Z5M9e9Xzduc",
+  "executionMode": "live",
+  "exactEffects": [
+    "publish the exact requested artifact at https://gui.561.group/",
+    "route gui.561.group requests to the exact requested artifact",
+    "serve public unauthenticated HTTPS GET and HEAD requests for path /"
+  ]
+}
