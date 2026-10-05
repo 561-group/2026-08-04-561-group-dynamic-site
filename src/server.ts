@@ -10,7 +10,7 @@ import { fiveSixOneTheme } from "@red-cup-engineering/561-group-website-theme";
 const CONTENT_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "content");
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 18_788;
-const PUBLIC_CONTENT_SOURCE = "https://github.com/561-group/561-group-site/blob/main/content";
+const PUBLIC_CONTENT_SOURCE = "https://github.com/561-group/2026-08-04-561-group-dynamic-site/blob/main/content";
 
 export function publicContentCitation(root: string, path: string): string {
   return `${PUBLIC_CONTENT_SOURCE}/${relative(root, path).replaceAll("\\", "/")}`;
